@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Gift, Search } from "lucide-react";
+import { Gift, Search, Image } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AddGiftDialog } from "@/components/gifts/AddGiftDialog";
 import { GiftDetailsDialog } from "@/components/gifts/GiftDetailsDialog";
@@ -13,7 +13,6 @@ const GiftsGiven = () => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
 
-  // Mock data for gifts given
   const gifts = [
     { 
       id: 1, 
