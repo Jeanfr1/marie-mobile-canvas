@@ -4,9 +4,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { MainLayout } from "./components/layout/MainLayout";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import Index from "./pages/Index";
-import Features from "./pages/Features";
-import About from "./pages/About";
+import Dashboard from "./pages/Dashboard";
+import GiftsReceived from "./pages/GiftsReceived";
+import GiftsGiven from "./pages/GiftsGiven";
+import Contacts from "./pages/Contacts";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -16,9 +17,10 @@ const App = () => (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<MainLayout />}>
-          <Route index element={<Index />} />
-          <Route path="features" element={<Features />} />
-          <Route path="about" element={<About />} />
+          <Route index element={<Dashboard />} />
+          <Route path="gifts-received" element={<GiftsReceived />} />
+          <Route path="gifts-given" element={<GiftsGiven />} />
+          <Route path="contacts" element={<Contacts />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

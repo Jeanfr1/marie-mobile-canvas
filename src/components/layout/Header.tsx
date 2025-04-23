@@ -1,6 +1,6 @@
 
 import { NavLink } from "react-router-dom";
-import { Menu } from "lucide-react";
+import { Menu, Gift, Users, PlusSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
@@ -12,8 +12,9 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
-            <NavLink to="/" className="text-xl font-semibold text-primary hover:text-primary/90 transition-colors">
-              Marie
+            <NavLink to="/" className="text-xl font-semibold text-primary hover:text-primary/90 transition-colors flex items-center gap-2">
+              <Gift className="h-6 w-6" />
+              <span>GiftTracker</span>
             </NavLink>
           </div>
 
@@ -22,26 +23,38 @@ export function Header() {
             <NavLink
               to="/"
               className={({ isActive }) => 
-                `nav-link ${isActive ? 'nav-link-active' : ''}`
+                `nav-link flex items-center gap-1 ${isActive ? 'nav-link-active' : ''}`
               }
             >
-              Home
+              <PlusSquare className="h-4 w-4" />
+              Dashboard
             </NavLink>
             <NavLink
-              to="/features"
+              to="/gifts-received"
               className={({ isActive }) => 
-                `nav-link ${isActive ? 'nav-link-active' : ''}`
+                `nav-link flex items-center gap-1 ${isActive ? 'nav-link-active' : ''}`
               }
             >
-              Features
+              <Gift className="h-4 w-4" />
+              Gifts Received
             </NavLink>
             <NavLink
-              to="/about"
+              to="/gifts-given"
               className={({ isActive }) => 
-                `nav-link ${isActive ? 'nav-link-active' : ''}`
+                `nav-link flex items-center gap-1 ${isActive ? 'nav-link-active' : ''}`
               }
             >
-              About
+              <Gift className="h-4 w-4" />
+              Gifts Given
+            </NavLink>
+            <NavLink
+              to="/contacts"
+              className={({ isActive }) => 
+                `nav-link flex items-center gap-1 ${isActive ? 'nav-link-active' : ''}`
+              }
+            >
+              <Users className="h-4 w-4" />
+              Contacts
             </NavLink>
           </nav>
 
@@ -61,29 +74,42 @@ export function Header() {
             <NavLink
               to="/"
               className={({ isActive }) => 
-                `nav-link block ${isActive ? 'nav-link-active' : ''}`
+                `nav-link flex items-center gap-2 p-2 ${isActive ? 'nav-link-active bg-primary/10 rounded-md' : ''}`
               }
               onClick={() => setIsOpen(false)}
             >
-              Home
+              <PlusSquare className="h-5 w-5" />
+              Dashboard
             </NavLink>
             <NavLink
-              to="/features"
+              to="/gifts-received"
               className={({ isActive }) => 
-                `nav-link block ${isActive ? 'nav-link-active' : ''}`
+                `nav-link flex items-center gap-2 p-2 ${isActive ? 'nav-link-active bg-primary/10 rounded-md' : ''}`
               }
               onClick={() => setIsOpen(false)}
             >
-              Features
+              <Gift className="h-5 w-5" />
+              Gifts Received
             </NavLink>
             <NavLink
-              to="/about"
+              to="/gifts-given"
               className={({ isActive }) => 
-                `nav-link block ${isActive ? 'nav-link-active' : ''}`
+                `nav-link flex items-center gap-2 p-2 ${isActive ? 'nav-link-active bg-primary/10 rounded-md' : ''}`
               }
               onClick={() => setIsOpen(false)}
             >
-              About
+              <Gift className="h-5 w-5" />
+              Gifts Given
+            </NavLink>
+            <NavLink
+              to="/contacts"
+              className={({ isActive }) => 
+                `nav-link flex items-center gap-2 p-2 ${isActive ? 'nav-link-active bg-primary/10 rounded-md' : ''}`
+              }
+              onClick={() => setIsOpen(false)}
+            >
+              <Users className="h-5 w-5" />
+              Contacts
             </NavLink>
           </nav>
         )}
