@@ -1,11 +1,18 @@
-
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Gift, Search, Filter, Plus, Image } from "lucide-react";
+import { Gift, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { AddGiftDialog } from "@/components/gifts/AddGiftDialog";
+import { GiftDetailsDialog } from "@/components/gifts/GiftDetailsDialog";
+import { GiftFilters } from "@/components/gifts/GiftFilters";
 
 const GiftsGiven = () => {
+  const [selectedGift, setSelectedGift] = useState<any | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+
   // Mock data for gifts given
   const gifts = [
     { 
@@ -46,6 +53,11 @@ const GiftsGiven = () => {
     }
   ];
 
+  const handleViewDetails = (gift: any) => {
+    setSelectedGift(gift);
+    setIsDetailsOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -53,10 +65,7 @@ const GiftsGiven = () => {
           <h1 className="text-3xl font-bold tracking-tight">Gifts Given</h1>
           <p className="text-muted-foreground mt-1">Track and manage gifts you've given to others</p>
         </div>
-        <Button className="flex items-center gap-2">
-          <Plus size={16} />
-          Add New Gift
-        </Button>
+        <AddGiftDialog type="given" />
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 justify-between">
@@ -67,10 +76,7 @@ const GiftsGiven = () => {
             className="pl-9"
           />
         </div>
-        <Button variant="outline" className="flex items-center gap-2 self-start">
-          <Filter size={16} />
-          Filter
-        </Button>
+        <GiftFilters />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -118,10 +124,23 @@ const GiftsGiven = () => {
                     </div>
                     
                     <div className="flex gap-2 pt-2">
-                      <Button variant="outline" size="sm" className="flex-1">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => handleViewDetails(gift)}
+                      >
                         View Details
                       </Button>
-                      <Button variant="outline" size="sm" className="flex-1">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => {
+                          setSelectedGift(gift);
+                          setIsEditMode(true);
+                        }}
+                      >
                         Edit
                       </Button>
                     </div>
@@ -132,6 +151,15 @@ const GiftsGiven = () => {
           </Card>
         ))}
       </div>
+
+      {selectedGift && (
+        <GiftDetailsDialog
+          isOpen={isDetailsOpen}
+          onClose={() => setIsDetailsOpen(false)}
+          gift={selectedGift}
+          type="given"
+        />
+      )}
     </div>
   );
 };

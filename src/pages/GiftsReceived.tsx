@@ -1,11 +1,17 @@
-
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Gift, Search, Filter, Plus, Image } from "lucide-react";
+import { Gift, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { AddGiftDialog } from "@/components/gifts/AddGiftDialog";
+import { GiftDetailsDialog } from "@/components/gifts/GiftDetailsDialog";
+import { GiftFilters } from "@/components/gifts/GiftFilters";
 
 const GiftsReceived = () => {
+  const [selectedGift, setSelectedGift] = useState<any | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
   // Mock data for gifts received
   const gifts = [
     { 
@@ -46,6 +52,11 @@ const GiftsReceived = () => {
     }
   ];
 
+  const handleViewDetails = (gift: any) => {
+    setSelectedGift(gift);
+    setIsDetailsOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -53,10 +64,7 @@ const GiftsReceived = () => {
           <h1 className="text-3xl font-bold tracking-tight">Gifts Received</h1>
           <p className="text-muted-foreground mt-1">Track and manage gifts you've been given</p>
         </div>
-        <Button className="flex items-center gap-2">
-          <Plus size={16} />
-          Add New Gift
-        </Button>
+        <AddGiftDialog type="received" />
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 justify-between">
@@ -67,10 +75,7 @@ const GiftsReceived = () => {
             className="pl-9"
           />
         </div>
-        <Button variant="outline" className="flex items-center gap-2 self-start">
-          <Filter size={16} />
-          Filter
-        </Button>
+        <GiftFilters />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -118,7 +123,12 @@ const GiftsReceived = () => {
                     </div>
                     
                     <div className="flex gap-2 pt-2">
-                      <Button variant="outline" size="sm" className="flex-1">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => handleViewDetails(gift)}
+                      >
                         View Details
                       </Button>
                       {!gift.thanked && (
@@ -134,6 +144,15 @@ const GiftsReceived = () => {
           </Card>
         ))}
       </div>
+
+      {selectedGift && (
+        <GiftDetailsDialog
+          isOpen={isDetailsOpen}
+          onClose={() => setIsDetailsOpen(false)}
+          gift={selectedGift}
+          type="received"
+        />
+      )}
     </div>
   );
 };
