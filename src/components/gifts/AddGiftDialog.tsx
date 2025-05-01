@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus } from "lucide-react";
+import { Plus, Upload, Image } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { GiftItem } from "@/pages/GiftsReceived"; 
 
@@ -20,6 +20,8 @@ export const AddGiftDialog = ({ type, onGiftAdded }: AddGiftDialogProps) => {
   const [occasion, setOccasion] = useState("");
   const [date, setDate] = useState("");
   const [cost, setCost] = useState<string>("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const resetForm = () => {
     setGiftName("");
@@ -27,6 +29,28 @@ export const AddGiftDialog = ({ type, onGiftAdded }: AddGiftDialogProps) => {
     setOccasion("");
     setDate("");
     setCost("");
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image is too large", { description: "Please select an image smaller than 5MB" });
+      return;
+    }
+
+    setImageFile(file);
+
+    // Create preview URL
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setImagePreview(event.target?.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -45,7 +69,7 @@ export const AddGiftDialog = ({ type, onGiftAdded }: AddGiftDialogProps) => {
       date: date,
       occasion: occasion,
       thanked: false,
-      image: null, // No image by default
+      image: imagePreview, // Use the image preview data URL
     };
 
     // For given gifts, add the recipient as 'to' and include cost if provided
@@ -132,6 +156,53 @@ export const AddGiftDialog = ({ type, onGiftAdded }: AddGiftDialogProps) => {
               />
             </div>
           )}
+          <div className="space-y-2">
+            <Label htmlFor="image">Gift Image</Label>
+            <div className="flex flex-col space-y-2">
+              {imagePreview ? (
+                <div className="relative w-full h-40 rounded overflow-hidden">
+                  <img 
+                    src={imagePreview} 
+                    alt="Gift preview" 
+                    className="w-full h-full object-cover" 
+                  />
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    size="sm" 
+                    className="absolute top-2 right-2"
+                    onClick={() => {
+                      setImageFile(null);
+                      setImagePreview(null);
+                    }}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ) : (
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center space-y-2">
+                  <Image className="h-8 w-8 text-muted-foreground" />
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">Upload an image of your gift</p>
+                    <p className="text-xs text-muted-foreground">PNG, JPG up to 5MB</p>
+                  </div>
+                  <label htmlFor="image-upload" className="cursor-pointer">
+                    <div className="flex items-center space-x-2 bg-primary text-primary-foreground hover:bg-primary/90 h-9 rounded-md px-3 text-sm transition-colors">
+                      <Upload size={14} />
+                      <span>Choose file</span>
+                    </div>
+                    <Input
+                      id="image-upload"
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={handleImageChange}
+                    />
+                  </label>
+                </div>
+              )}
+            </div>
+          </div>
           <DialogFooter>
             <Button type="submit">Save Gift</Button>
           </DialogFooter>
