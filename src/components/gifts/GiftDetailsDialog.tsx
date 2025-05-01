@@ -1,20 +1,10 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { GiftItem } from "@/pages/GiftsReceived";
 
 interface GiftDetailsDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  gift: {
-    name: string;
-    to?: string;
-    from?: string;
-    date: string;
-    occasion: string;
-    cost?: string;
-    thanked?: boolean;
-    image?: string | null;
-  };
+  gift: GiftItem;
   type: 'received' | 'given';
 }
 

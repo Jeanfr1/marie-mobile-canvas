@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Gift, Users, Calendar, Bell, Eye, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,76 @@ const Dashboard = () => {
     { id: 2, name: "Wedding Anniversary", date: "2025-06-15", daysLeft: 50 },
     { id: 3, name: "Friend's Graduation", date: "2025-05-25", daysLeft: 29 }
   ]);
+
+  // Load data from localStorage when component mounts
+  useEffect(() => {
+    // Load received gifts count
+    const savedReceivedGifts = localStorage.getItem('receivedGifts');
+    const receivedGifts = savedReceivedGifts ? JSON.parse(savedReceivedGifts) : [];
+
+    // Load given gifts count (if implemented)
+    const savedGivenGifts = localStorage.getItem('givenGifts');
+    const givenGifts = savedGivenGifts ? JSON.parse(savedGivenGifts) : [];
+
+    // Load events count (if implemented)
+    const savedEvents = localStorage.getItem('events');
+    const events = savedEvents ? JSON.parse(savedEvents) : [];
+
+    // Update stats with actual counts
+    setStats(prevStats => ({
+      ...prevStats,
+      giftsReceived: receivedGifts.length || prevStats.giftsReceived,
+      giftsGiven: givenGifts.length || prevStats.giftsGiven,
+      upcomingEvents: events.length || prevStats.upcomingEvents
+    }));
+
+    // Update recent gifts list if there are received gifts
+    if (receivedGifts.length > 0) {
+      const formattedGifts = receivedGifts
+        .slice(-3) // Get last 3 gifts
+        .map((gift: any) => ({
+          id: gift.id,
+          name: gift.name,
+          from: gift.from,
+          date: gift.date,
+          status: gift.thanked ? "Thank you sent" : "Pending"
+        }));
+      
+      setRecentGifts(formattedGifts);
+    }
+
+    // Listen for gift updates
+    const handleGiftsUpdated = (event: CustomEvent) => {
+      const { type, count } = event.detail;
+      
+      if (type === 'received') {
+        setStats(prev => ({ ...prev, giftsReceived: count }));
+        
+        // Also update recent gifts if available
+        const savedGifts = localStorage.getItem('receivedGifts');
+        if (savedGifts) {
+          const allGifts = JSON.parse(savedGifts);
+          const recentOnes = allGifts.slice(-3).map((gift: any) => ({
+            id: gift.id,
+            name: gift.name,
+            from: gift.from,
+            date: gift.date,
+            status: gift.thanked ? "Thank you sent" : "Pending"
+          }));
+          setRecentGifts(recentOnes);
+        }
+      } else if (type === 'given') {
+        setStats(prev => ({ ...prev, giftsGiven: count }));
+      }
+    };
+
+    window.addEventListener('gifts-updated', handleGiftsUpdated as EventListener);
+
+    // Clean up event listener when component unmounts
+    return () => {
+      window.removeEventListener('gifts-updated', handleGiftsUpdated as EventListener);
+    };
+  }, []);
   
   // Handle adding a new event
   const handleAddEvent = () => {
@@ -86,6 +157,16 @@ const Dashboard = () => {
       ...prev,
       upcomingEvents: prev.upcomingEvents + 1
     }));
+
+    // Save events to localStorage for persistence
+    const savedEvents = localStorage.getItem('events');
+    const existingEvents = savedEvents ? JSON.parse(savedEvents) : [];
+    const updatedEvents = [...existingEvents, {
+      id: Date.now(),
+      name: newEvent.name,
+      date: newEvent.date.toISOString()
+    }];
+    localStorage.setItem('events', JSON.stringify(updatedEvents));
   };
   
   const handleViewAllGifts = () => {

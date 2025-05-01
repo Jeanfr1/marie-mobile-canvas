@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import { GiftFilters } from "@/components/gifts/GiftFilters";
 import { SendThanksDialog } from "@/components/gifts/SendThanksDialog";
 import { toast } from "@/components/ui/sonner";
 
-interface GiftItem {
+export interface GiftItem {
   id: number;
   name: string;
   from: string;
@@ -19,7 +19,14 @@ interface GiftItem {
   occasion: string;
   thanked: boolean;
   image?: string | null;
+  cost?: number;
 }
+
+// Create a global event system for dashboard updates
+export const dispatchGlobalEvent = (eventName: string, data?: any) => {
+  const event = new CustomEvent(eventName, { detail: data });
+  window.dispatchEvent(event);
+};
 
 const GiftsReceived = () => {
   const [selectedGift, setSelectedGift] = useState<GiftItem | null>(null);
@@ -66,6 +73,21 @@ const GiftsReceived = () => {
     }
   ]);
 
+  // When component mounts, load gifts from localStorage if available
+  useEffect(() => {
+    const savedGifts = localStorage.getItem('receivedGifts');
+    if (savedGifts) {
+      setGifts(JSON.parse(savedGifts));
+    }
+  }, []);
+
+  // When gifts change, save to localStorage and update dashboard
+  useEffect(() => {
+    localStorage.setItem('receivedGifts', JSON.stringify(gifts));
+    // Update dashboard stats
+    dispatchGlobalEvent('gifts-updated', { type: 'received', count: gifts.length });
+  }, [gifts]);
+
   const handleViewDetails = (gift: GiftItem) => {
     setSelectedGift(gift);
     setIsDetailsOpen(true);
@@ -83,6 +105,14 @@ const GiftsReceived = () => {
     
     toast.success("Gift marked as thanked!", {
       description: "You've successfully thanked the gift giver."
+    });
+  };
+
+  const handleAddGift = (newGift: GiftItem) => {
+    setGifts(prevGifts => [...prevGifts, newGift]);
+    
+    toast.success("New gift added!", {
+      description: `${newGift.name} from ${newGift.from} has been added to your gifts.`
     });
   };
   
@@ -105,7 +135,7 @@ const GiftsReceived = () => {
           <h1 className="text-3xl font-bold tracking-tight">Gifts Received</h1>
           <p className="text-muted-foreground mt-1">Track and manage gifts you've been given</p>
         </div>
-        <AddGiftDialog type="received" />
+        <AddGiftDialog type="received" onGiftAdded={handleAddGift} />
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 justify-between">
