@@ -20,6 +20,7 @@ export interface GiftItem {
   thanked: boolean;
   image?: string | null;
   cost?: number;
+  to?: string; // Added for compatibility with given gifts
 }
 
 // Create a global event system for dashboard updates

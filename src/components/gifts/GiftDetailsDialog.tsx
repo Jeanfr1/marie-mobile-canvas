@@ -44,7 +44,7 @@ export const GiftDetailsDialog = ({ isOpen, onClose, gift, type }: GiftDetailsDi
               {type === 'given' && gift.cost && (
                 <div>
                   <p className="text-muted-foreground">Cost:</p>
-                  <p>{gift.cost}</p>
+                  <p>${gift.cost}</p>
                 </div>
               )}
               {type === 'received' && (

@@ -6,21 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
-
-interface Gift {
-  id: number;
-  name: string;
-  from: string;
-  date: string;
-  occasion: string;
-  thanked: boolean;
-  image?: string | null;
-  cost?: number;
-}
+import { GiftItem } from "@/pages/GiftsReceived"; 
 
 interface AddGiftDialogProps {
   type: 'received' | 'given';
-  onGiftAdded?: (gift: Gift) => void;
+  onGiftAdded?: (gift: GiftItem) => void;
 }
 
 export const AddGiftDialog = ({ type, onGiftAdded }: AddGiftDialogProps) => {
@@ -48,7 +38,7 @@ export const AddGiftDialog = ({ type, onGiftAdded }: AddGiftDialogProps) => {
       return;
     }
     
-    const newGift: Gift = {
+    const newGift: GiftItem = {
       id: Date.now(), // Use timestamp as a simple unique ID
       name: giftName,
       from: type === 'received' ? person : 'Me',
@@ -58,8 +48,10 @@ export const AddGiftDialog = ({ type, onGiftAdded }: AddGiftDialogProps) => {
       image: null, // No image by default
     };
 
+    // For given gifts, add the recipient as 'to' and include cost if provided
     if (type === 'given') {
-      newGift.cost = cost ? Number(cost) : undefined;
+      (newGift as any).to = person;
+      newGift.cost = cost ? parseFloat(cost) : undefined;
     }
     
     // Pass the new gift to parent component

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,8 +12,8 @@ import { GiftItem } from "@/pages/GiftsReceived";
 import { dispatchGlobalEvent } from "@/pages/GiftsReceived";
 import { toast } from "@/components/ui/sonner";
 
-// Extended GiftItem interface for given gifts (with 'to' instead of 'from')
-interface GivenGiftItem extends Omit<GiftItem, 'from'> {
+// Extended GiftItem interface for given gifts (with required 'to' property)
+interface GivenGiftItem extends GiftItem {
   to: string;
 }
 
@@ -29,9 +28,10 @@ const GiftsGiven = () => {
       id: 1, 
       name: "Smart Watch", 
       to: "Emma Roberts", 
+      from: "Me",
       date: "2025-02-15", 
       occasion: "Birthday", 
-      cost: "$199.99",
+      cost: 199.99,
       image: "https://images.unsplash.com/photo-1466721591366-2d5fba72006d?w=300&h=200&fit=crop",
       thanked: false
     },
@@ -39,9 +39,10 @@ const GiftsGiven = () => {
       id: 2, 
       name: "Wine Gift Basket", 
       to: "Robert & Mary", 
+      from: "Me",
       date: "2025-03-10", 
       occasion: "Anniversary", 
-      cost: "$75.00",
+      cost: 75.00,
       image: null,
       thanked: false
     },
@@ -49,9 +50,10 @@ const GiftsGiven = () => {
       id: 3, 
       name: "Fitness Tracker", 
       to: "Chris Thompson", 
+      from: "Me",
       date: "2025-04-05", 
       occasion: "Graduation", 
-      cost: "$89.95",
+      cost: 89.95,
       image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=300&h=200&fit=crop",
       thanked: false
     },
@@ -59,9 +61,10 @@ const GiftsGiven = () => {
       id: 4, 
       name: "Gift Card", 
       to: "Office Team", 
+      from: "Me",
       date: "2025-04-16", 
       occasion: "Appreciation", 
-      cost: "$200.00",
+      cost: 200.00,
       image: null,
       thanked: false
     }
@@ -92,11 +95,18 @@ const GiftsGiven = () => {
     setIsEditOpen(true);
   };
 
-  const handleAddGift = (newGift: GivenGiftItem) => {
-    setGifts(prevGifts => [...prevGifts, newGift]);
+  const handleAddGift = (newGift: GiftItem) => {
+    // Convert the general gift to a given gift
+    const givenGift: GivenGiftItem = {
+      ...newGift,
+      to: (newGift as any).to || 'Unknown',
+      from: 'Me'
+    };
+    
+    setGifts(prevGifts => [...prevGifts, givenGift]);
     
     toast.success("New gift added!", {
-      description: `${newGift.name} for ${newGift.to} has been added to your gifts.`
+      description: `${givenGift.name} for ${givenGift.to} has been added to your gifts.`
     });
   };
 
