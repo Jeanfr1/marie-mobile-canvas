@@ -38,37 +38,37 @@ const GiftsReceived = () => {
   const [gifts, setGifts] = useState<GiftItem[]>([
     { 
       id: 1, 
-      name: "Wireless Headphones", 
+      name: "Écouteurs sans fil", 
       from: "Mike Johnson", 
       date: "2025-03-15", 
-      occasion: "Birthday", 
+      occasion: "Anniversaire", 
       thanked: true,
       image: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=300&h=200&fit=crop"
     },
     { 
       id: 2, 
-      name: "Scented Candle Set", 
+      name: "Ensemble de bougies parfumées", 
       from: "Lisa Smith", 
       date: "2025-03-25", 
-      occasion: "Housewarming", 
+      occasion: "Pendaison de crémaillère", 
       thanked: true,
       image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=300&h=200&fit=crop"
     },
     { 
       id: 3, 
-      name: "Coffee Maker", 
+      name: "Machine à café", 
       from: "John & Sarah", 
       date: "2025-04-10", 
-      occasion: "Wedding", 
+      occasion: "Mariage", 
       thanked: false,
       image: "https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=300&h=200&fit=crop"
     },
     { 
       id: 4, 
-      name: "Book Collection", 
+      name: "Collection de livres", 
       from: "David Williams", 
       date: "2025-04-18", 
-      occasion: "Just Because", 
+      occasion: "Juste comme ça", 
       thanked: false,
       image: "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=300&h=200&fit=crop"
     }
@@ -104,16 +104,16 @@ const GiftsReceived = () => {
       gift.id === giftId ? { ...gift, thanked: true } : gift
     ));
     
-    toast.success("Gift marked as thanked!", {
-      description: "You've successfully thanked the gift giver."
+    toast.success("Cadeau marqué comme remercié !", {
+      description: "Vous avez remercié avec succès la personne qui vous a offert ce cadeau."
     });
   };
 
   const handleAddGift = (newGift: GiftItem) => {
     setGifts(prevGifts => [...prevGifts, newGift]);
     
-    toast.success("New gift added!", {
-      description: `${newGift.name} from ${newGift.from} has been added to your gifts.`
+    toast.success("Nouveau cadeau ajouté !", {
+      description: `${newGift.name} de la part de ${newGift.from} a été ajouté à vos cadeaux.`
     });
   };
   
@@ -133,8 +133,8 @@ const GiftsReceived = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Gifts Received</h1>
-          <p className="text-muted-foreground mt-1">Track and manage gifts you've been given</p>
+          <h1 className="text-3xl font-bold tracking-tight">Cadeaux Reçus</h1>
+          <p className="text-muted-foreground mt-1">Suivez et gérez les cadeaux que vous avez reçus</p>
         </div>
         <AddGiftDialog type="received" onGiftAdded={handleAddGift} />
       </div>
@@ -143,7 +143,7 @@ const GiftsReceived = () => {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
-            placeholder="Search gifts, people..." 
+            placeholder="Rechercher cadeaux, personnes..." 
             className="pl-9"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -155,8 +155,8 @@ const GiftsReceived = () => {
       {filteredGifts.length === 0 ? (
         <div className="text-center py-10">
           <Gift className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium">No gifts found</h3>
-          <p className="text-muted-foreground">Try adjusting your search or filters</p>
+          <h3 className="text-lg font-medium">Aucun cadeau trouvé</h3>
+          <p className="text-muted-foreground">Essayez d'ajuster votre recherche ou vos filtres</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -182,10 +182,10 @@ const GiftsReceived = () => {
                     <div className="flex justify-between items-start">
                       <div>
                         <CardTitle className="text-xl">{gift.name}</CardTitle>
-                        <p className="text-muted-foreground text-sm">From: {gift.from}</p>
+                        <p className="text-muted-foreground text-sm">De: {gift.from}</p>
                       </div>
                       <Badge variant={gift.thanked ? "secondary" : "outline"}>
-                        {gift.thanked ? "Thanked" : "Thank You Pending"}
+                        {gift.thanked ? "Remercié" : "Remerciement en attente"}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -194,7 +194,7 @@ const GiftsReceived = () => {
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <div>
-                          <p className="text-muted-foreground">Date Received:</p>
+                          <p className="text-muted-foreground">Date de réception:</p>
                           <p className="font-medium">{gift.date}</p>
                         </div>
                         <div>
@@ -210,7 +210,7 @@ const GiftsReceived = () => {
                           className="flex-1"
                           onClick={() => handleViewDetails(gift)}
                         >
-                          View Details
+                          Voir les détails
                         </Button>
                         {!gift.thanked && (
                           <Button 
@@ -219,7 +219,7 @@ const GiftsReceived = () => {
                             onClick={() => handleSendThanks(gift)}
                           >
                             <Heart className="h-4 w-4" />
-                            Send Thanks
+                            Envoyer un remerciement
                           </Button>
                         )}
                       </div>

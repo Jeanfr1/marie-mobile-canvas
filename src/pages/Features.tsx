@@ -7,25 +7,25 @@ const Features = () => {
   const features = [
     {
       icon: <Activity className="w-6 h-6 text-primary" />,
-      title: "Real-time Analytics",
-      description: "Track your performance with detailed analytics and insights",
+      title: "Analyses en temps réel",
+      description: "Suivez vos performances avec des analyses et des insights détaillés",
       badge: "Pro"
     },
     {
       icon: <MessageSquare className="w-6 h-6 text-primary" />,
-      title: "Smart Messaging",
-      description: "Connect with your team using our advanced messaging system",
+      title: "Messagerie intelligente",
+      description: "Connectez-vous avec votre équipe grâce à notre système de messagerie avancé",
     },
     {
       icon: <Users className="w-6 h-6 text-primary" />,
-      title: "Team Collaboration",
-      description: "Work together seamlessly with powerful collaboration tools",
+      title: "Collaboration d'équipe",
+      description: "Travaillez ensemble sans effort avec des outils de collaboration puissants",
     },
     {
       icon: <Calendar className="w-6 h-6 text-primary" />,
-      title: "Smart Scheduling",
-      description: "Automate your calendar and never miss an important meeting",
-      badge: "New"
+      title: "Planification intelligente",
+      description: "Automatisez votre calendrier et ne manquez jamais une réunion importante",
+      badge: "Nouveau"
     }
   ]
 
@@ -33,10 +33,10 @@ const Features = () => {
     <div className="container mx-auto py-12">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold tracking-tight mb-4">
-          Powerful Features for Modern Teams
+          Fonctionnalités puissantes pour les équipes modernes
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Discover all the innovative features that make Marie the perfect solution for your team.
+          Découvrez toutes les fonctionnalités innovantes qui font de Marie la solution parfaite pour votre équipe.
         </p>
       </div>
 

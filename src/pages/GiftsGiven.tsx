@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,44 +27,44 @@ const GiftsGiven = () => {
   const [gifts, setGifts] = useState<GivenGiftItem[]>([
     { 
       id: 1, 
-      name: "Smart Watch", 
+      name: "Montre connectée", 
       to: "Emma Roberts", 
-      from: "Me",
+      from: "Moi",
       date: "2025-02-15", 
-      occasion: "Birthday", 
+      occasion: "Anniversaire", 
       cost: 199.99,
       image: "https://images.unsplash.com/photo-1466721591366-2d5fba72006d?w=300&h=200&fit=crop",
       thanked: false
     },
     { 
       id: 2, 
-      name: "Wine Gift Basket", 
+      name: "Panier cadeau de vin", 
       to: "Robert & Mary", 
-      from: "Me",
+      from: "Moi",
       date: "2025-03-10", 
-      occasion: "Anniversary", 
+      occasion: "Anniversaire de mariage", 
       cost: 75.00,
       image: null,
       thanked: false
     },
     { 
       id: 3, 
-      name: "Fitness Tracker", 
+      name: "Bracelet fitness", 
       to: "Chris Thompson", 
-      from: "Me",
+      from: "Moi",
       date: "2025-04-05", 
-      occasion: "Graduation", 
+      occasion: "Remise de diplôme", 
       cost: 89.95,
       image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=300&h=200&fit=crop",
       thanked: false
     },
     { 
       id: 4, 
-      name: "Gift Card", 
-      to: "Office Team", 
-      from: "Me",
+      name: "Carte cadeau", 
+      to: "Équipe de bureau", 
+      from: "Moi",
       date: "2025-04-16", 
-      occasion: "Appreciation", 
+      occasion: "Appréciation", 
       cost: 200.00,
       image: null,
       thanked: false
@@ -99,14 +100,14 @@ const GiftsGiven = () => {
     // Convert the general gift to a given gift
     const givenGift: GivenGiftItem = {
       ...newGift,
-      to: (newGift as any).to || 'Unknown',
-      from: 'Me'
+      to: (newGift as any).to || 'Inconnu',
+      from: 'Moi'
     };
     
     setGifts(prevGifts => [...prevGifts, givenGift]);
     
-    toast.success("New gift added!", {
-      description: `${givenGift.name} for ${givenGift.to} has been added to your gifts.`
+    toast.success("Nouveau cadeau ajouté !", {
+      description: `${givenGift.name} pour ${givenGift.to} a été ajouté à vos cadeaux.`
     });
   };
 
@@ -126,8 +127,8 @@ const GiftsGiven = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Gifts Given</h1>
-          <p className="text-muted-foreground mt-1">Track and manage gifts you've given to others</p>
+          <h1 className="text-3xl font-bold tracking-tight">Cadeaux Offerts</h1>
+          <p className="text-muted-foreground mt-1">Suivez et gérez les cadeaux que vous avez offerts</p>
         </div>
         <AddGiftDialog type="given" onGiftAdded={handleAddGift} />
       </div>
@@ -136,7 +137,7 @@ const GiftsGiven = () => {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
-            placeholder="Search gifts, recipients..." 
+            placeholder="Rechercher cadeaux, destinataires..." 
             className="pl-9"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -148,8 +149,8 @@ const GiftsGiven = () => {
       {filteredGifts.length === 0 ? (
         <div className="text-center py-10">
           <Gift className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium">No gifts found</h3>
-          <p className="text-muted-foreground">Try adjusting your search or filters</p>
+          <h3 className="text-lg font-medium">Aucun cadeau trouvé</h3>
+          <p className="text-muted-foreground">Essayez d'ajuster votre recherche ou vos filtres</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -175,10 +176,10 @@ const GiftsGiven = () => {
                     <div className="flex justify-between items-start">
                       <div>
                         <CardTitle className="text-xl">{gift.name}</CardTitle>
-                        <p className="text-muted-foreground text-sm">To: {gift.to}</p>
+                        <p className="text-muted-foreground text-sm">Pour: {gift.to}</p>
                       </div>
                       <Badge variant="secondary" className="bg-secondary/20 text-secondary border-secondary/30">
-                        {gift.cost}
+                        {gift.cost}€
                       </Badge>
                     </div>
                   </CardHeader>
@@ -187,7 +188,7 @@ const GiftsGiven = () => {
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <div>
-                          <p className="text-muted-foreground">Date Given:</p>
+                          <p className="text-muted-foreground">Date d'offre:</p>
                           <p className="font-medium">{gift.date}</p>
                         </div>
                         <div>
@@ -203,7 +204,7 @@ const GiftsGiven = () => {
                           className="flex-1"
                           onClick={() => handleViewDetails(gift)}
                         >
-                          View Details
+                          Voir les détails
                         </Button>
                         <Button 
                           variant="outline" 
@@ -211,7 +212,7 @@ const GiftsGiven = () => {
                           className="flex-1"
                           onClick={() => handleEdit(gift)}
                         >
-                          Edit
+                          Modifier
                         </Button>
                       </div>
                     </div>

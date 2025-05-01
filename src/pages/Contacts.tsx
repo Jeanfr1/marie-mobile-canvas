@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,46 +30,46 @@ const Contacts = () => {
     { 
       id: 1, 
       name: "Sarah Johnson", 
-      relationship: "Family", 
+      relationship: "Famille", 
       giftsReceived: 5,
       giftsGiven: 4,
-      upcoming: "Birthday - May 15",
-      interests: ["Books", "Cooking", "Gardening"]
+      upcoming: "Anniversaire - 15 mai",
+      interests: ["Livres", "Cuisine", "Jardinage"]
     },
     { 
       id: 2, 
       name: "Michael Smith", 
-      relationship: "Friend", 
+      relationship: "Ami", 
       giftsReceived: 2,
       giftsGiven: 3,
-      upcoming: "Anniversary - June 10",
-      interests: ["Tech", "Hiking", "Photography"]
+      upcoming: "Anniversaire de mariage - 10 juin",
+      interests: ["Technologie", "Randonnée", "Photographie"]
     },
     { 
       id: 3, 
       name: "Emily Davis", 
-      relationship: "Colleague", 
+      relationship: "Collègue", 
       giftsReceived: 1,
       giftsGiven: 2,
       upcoming: null,
-      interests: ["Wine", "Travel", "Art"]
+      interests: ["Vin", "Voyage", "Art"]
     },
     { 
       id: 4, 
       name: "David Wilson", 
-      relationship: "Friend", 
+      relationship: "Ami", 
       giftsReceived: 3,
       giftsGiven: 2,
-      upcoming: "Birthday - June 22",
-      interests: ["Sports", "Music", "Cooking"]
+      upcoming: "Anniversaire - 22 juin",
+      interests: ["Sports", "Musique", "Cuisine"]
     }
   ]);
 
   // Mock data for gifts
   const mockGifts = [
-    { id: 1, name: "Book - The Alchemist", date: "2023-12-25", occasion: "Christmas", type: "Given" },
-    { id: 2, name: "Cooking Class", date: "2023-10-15", occasion: "Birthday", type: "Received" },
-    { id: 3, name: "Gardening Tools", date: "2024-01-01", occasion: "New Year", type: "Given" }
+    { id: 1, name: "Livre - L'Alchimiste", date: "2023-12-25", occasion: "Noël", type: "Donné" },
+    { id: 2, name: "Cours de cuisine", date: "2023-10-15", occasion: "Anniversaire", type: "Reçu" },
+    { id: 3, name: "Outils de jardinage", date: "2024-01-01", occasion: "Nouvel An", type: "Donné" }
   ];
 
   // Filter contacts based on search query and relationship filter
@@ -99,7 +98,7 @@ const Contacts = () => {
     
     setContacts([...contacts, newContact]);
     setIsAddContactOpen(false);
-    toast.success("Contact added successfully!");
+    toast.success("Contact ajouté avec succès!");
   };
 
   // Handle edit contact
@@ -120,14 +119,14 @@ const Contacts = () => {
     
     setContacts(updatedContacts);
     setIsEditContactOpen(false);
-    toast.success("Contact updated successfully!");
+    toast.success("Contact modifié avec succès!");
   };
 
   // Set up forms
   const addContactForm = useForm({
     defaultValues: {
       name: "",
-      relationship: "Friend",
+      relationship: "Ami",
       interests: ""
     }
   });
@@ -135,7 +134,7 @@ const Contacts = () => {
   const editContactForm = useForm({
     defaultValues: {
       name: selectedContact?.name || "",
-      relationship: selectedContact?.relationship || "Friend",
+      relationship: selectedContact?.relationship || "Ami",
       interests: selectedContact ? selectedContact.interests.join(", ") : ""
     }
   });
@@ -156,18 +155,18 @@ const Contacts = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Contacts</h1>
-          <p className="text-muted-foreground mt-1">Manage your gift-giving network</p>
+          <p className="text-muted-foreground mt-1">Gérez votre réseau d'échange de cadeaux</p>
         </div>
         <Dialog open={isAddContactOpen} onOpenChange={setIsAddContactOpen}>
           <DialogTrigger asChild>
             <Button className="flex items-center gap-2">
               <Plus size={16} />
-              Add Contact
+              Ajouter un contact
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New Contact</DialogTitle>
+              <DialogTitle>Ajouter un nouveau contact</DialogTitle>
             </DialogHeader>
             <Form {...addContactForm}>
               <form onSubmit={addContactForm.handleSubmit(handleAddContact)} className="space-y-4">
@@ -176,9 +175,9 @@ const Contacts = () => {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Name</FormLabel>
+                      <FormLabel>Nom</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter contact name" {...field} />
+                        <Input placeholder="Saisir le nom du contact" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -190,18 +189,18 @@ const Contacts = () => {
                   name="relationship"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Relationship</FormLabel>
+                      <FormLabel>Relation</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select relationship" />
+                            <SelectValue placeholder="Sélectionner une relation" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Family">Family</SelectItem>
-                          <SelectItem value="Friend">Friend</SelectItem>
-                          <SelectItem value="Colleague">Colleague</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
+                          <SelectItem value="Famille">Famille</SelectItem>
+                          <SelectItem value="Ami">Ami</SelectItem>
+                          <SelectItem value="Collègue">Collègue</SelectItem>
+                          <SelectItem value="Autre">Autre</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -214,9 +213,9 @@ const Contacts = () => {
                   name="interests"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Interests (comma separated)</FormLabel>
+                      <FormLabel>Intérêts (séparés par des virgules)</FormLabel>
                       <FormControl>
-                        <Input placeholder="Books, Coffee, Travel..." {...field} />
+                        <Input placeholder="Livres, Café, Voyage..." {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -224,8 +223,8 @@ const Contacts = () => {
                 />
                 
                 <DialogFooter>
-                  <Button variant="outline" type="button" onClick={() => setIsAddContactOpen(false)}>Cancel</Button>
-                  <Button type="submit">Add Contact</Button>
+                  <Button variant="outline" type="button" onClick={() => setIsAddContactOpen(false)}>Annuler</Button>
+                  <Button type="submit">Ajouter un contact</Button>
                 </DialogFooter>
               </form>
             </Form>
@@ -237,7 +236,7 @@ const Contacts = () => {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
-            placeholder="Search contacts..." 
+            placeholder="Rechercher des contacts..." 
             className="pl-9"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -258,46 +257,46 @@ const Contacts = () => {
           <DialogTrigger asChild>
             <Button variant="outline" className="flex items-center gap-2 self-start">
               <Filter size={16} />
-              Filter
+              Filtrer
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Filter Contacts</DialogTitle>
+              <DialogTitle>Filtrer les contacts</DialogTitle>
             </DialogHeader>
             <div className="py-4">
-              <h4 className="text-sm font-medium mb-3">Relationship</h4>
+              <h4 className="text-sm font-medium mb-3">Relation</h4>
               <RadioGroup 
                 value={relationshipFilter || ""} 
                 onValueChange={(value) => setRelationshipFilter(value === "" ? null : value)}
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="" id="all" />
-                  <label htmlFor="all" className="text-sm">All</label>
+                  <label htmlFor="all" className="text-sm">Tous</label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="Family" id="family" />
-                  <label htmlFor="family" className="text-sm">Family</label>
+                  <RadioGroupItem value="Famille" id="family" />
+                  <label htmlFor="family" className="text-sm">Famille</label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="Friend" id="friend" />
-                  <label htmlFor="friend" className="text-sm">Friend</label>
+                  <RadioGroupItem value="Ami" id="friend" />
+                  <label htmlFor="friend" className="text-sm">Ami</label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="Colleague" id="colleague" />
-                  <label htmlFor="colleague" className="text-sm">Colleague</label>
+                  <RadioGroupItem value="Collègue" id="colleague" />
+                  <label htmlFor="colleague" className="text-sm">Collègue</label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="Other" id="other" />
-                  <label htmlFor="other" className="text-sm">Other</label>
+                  <RadioGroupItem value="Autre" id="other" />
+                  <label htmlFor="other" className="text-sm">Autre</label>
                 </div>
               </RadioGroup>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => {
                 setRelationshipFilter(null);
-              }}>Reset</Button>
-              <Button onClick={() => setIsFilterOpen(false)}>Apply</Button>
+              }}>Réinitialiser</Button>
+              <Button onClick={() => setIsFilterOpen(false)}>Appliquer</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -326,7 +325,7 @@ const Contacts = () => {
                       <Gift className="h-4 w-4 text-secondary" />
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">Gift Exchange</p>
+                      <p className="text-xs text-muted-foreground">Échange de cadeaux</p>
                       <p className="font-medium">{contact.giftsReceived} / {contact.giftsGiven}</p>
                     </div>
                   </div>
@@ -337,7 +336,7 @@ const Contacts = () => {
                         <Calendar className="h-4 w-4 text-primary" />
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground">Upcoming</p>
+                        <p className="text-xs text-muted-foreground">À venir</p>
                         <p className="font-medium text-sm">{contact.upcoming}</p>
                       </div>
                     </div>
@@ -365,11 +364,11 @@ const Contacts = () => {
                     setIsViewGiftsOpen(open);
                   }}>
                     <DrawerTrigger asChild>
-                      <Button variant="outline" size="sm" onClick={() => setSelectedContact(contact)}>View Gifts</Button>
+                      <Button variant="outline" size="sm" onClick={() => setSelectedContact(contact)}>Voir les cadeaux</Button>
                     </DrawerTrigger>
                     <DrawerContent>
                       <DrawerHeader>
-                        <DrawerTitle>Gifts for {selectedContact?.name}</DrawerTitle>
+                        <DrawerTitle>Cadeaux pour {selectedContact?.name}</DrawerTitle>
                       </DrawerHeader>
                       <div className="px-4 py-2">
                         {mockGifts.length > 0 ? (
@@ -380,18 +379,18 @@ const Contacts = () => {
                                   <p className="font-medium">{gift.name}</p>
                                   <p className="text-sm text-muted-foreground">{gift.occasion} • {new Date(gift.date).toLocaleDateString()}</p>
                                 </div>
-                                <Badge variant={gift.type === "Given" ? "default" : "secondary"}>
+                                <Badge variant={gift.type === "Donné" ? "default" : "secondary"}>
                                   {gift.type}
                                 </Badge>
                               </div>
                             ))}
                           </div>
                         ) : (
-                          <p className="text-center text-muted-foreground py-8">No gifts exchanged yet</p>
+                          <p className="text-center text-muted-foreground py-8">Pas encore de cadeaux échangés</p>
                         )}
                       </div>
                       <DrawerFooter>
-                        <Button variant="outline" onClick={() => setIsViewGiftsOpen(false)}>Close</Button>
+                        <Button variant="outline" onClick={() => setIsViewGiftsOpen(false)}>Fermer</Button>
                       </DrawerFooter>
                     </DrawerContent>
                   </Drawer>
@@ -399,11 +398,11 @@ const Contacts = () => {
                     if (!open) setIsEditContactOpen(false);
                   }}>
                     <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" onClick={() => openEditDialog(contact)}>Edit</Button>
+                      <Button variant="outline" size="sm" onClick={() => openEditDialog(contact)}>Modifier</Button>
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>Edit Contact</DialogTitle>
+                        <DialogTitle>Modifier le contact</DialogTitle>
                       </DialogHeader>
                       <Form {...editContactForm}>
                         <form onSubmit={editContactForm.handleSubmit(handleEditContact)} className="space-y-4">
@@ -412,9 +411,9 @@ const Contacts = () => {
                             name="name"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Name</FormLabel>
+                                <FormLabel>Nom</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="Enter contact name" {...field} />
+                                  <Input placeholder="Saisir le nom du contact" {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -426,18 +425,18 @@ const Contacts = () => {
                             name="relationship"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Relationship</FormLabel>
+                                <FormLabel>Relation</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                   <FormControl>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="Select relationship" />
+                                      <SelectValue placeholder="Sélectionner une relation" />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    <SelectItem value="Family">Family</SelectItem>
-                                    <SelectItem value="Friend">Friend</SelectItem>
-                                    <SelectItem value="Colleague">Colleague</SelectItem>
-                                    <SelectItem value="Other">Other</SelectItem>
+                                    <SelectItem value="Famille">Famille</SelectItem>
+                                    <SelectItem value="Ami">Ami</SelectItem>
+                                    <SelectItem value="Collègue">Collègue</SelectItem>
+                                    <SelectItem value="Autre">Autre</SelectItem>
                                   </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -450,9 +449,9 @@ const Contacts = () => {
                             name="interests"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Interests (comma separated)</FormLabel>
+                                <FormLabel>Intérêts (séparés par des virgules)</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="Books, Coffee, Travel..." {...field} />
+                                  <Input placeholder="Livres, Café, Voyage..." {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -460,8 +459,8 @@ const Contacts = () => {
                           />
                           
                           <DialogFooter>
-                            <Button variant="outline" type="button" onClick={() => setIsEditContactOpen(false)}>Cancel</Button>
-                            <Button type="submit">Save Changes</Button>
+                            <Button variant="outline" type="button" onClick={() => setIsEditContactOpen(false)}>Annuler</Button>
+                            <Button type="submit">Enregistrer les modifications</Button>
                           </DialogFooter>
                         </form>
                       </Form>
@@ -479,8 +478,8 @@ const Contacts = () => {
               <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
                 <Users className="h-6 w-6 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-medium">No contacts found</h3>
-              <p className="text-muted-foreground mt-1">Try adjusting your search or filters</p>
+              <h3 className="text-lg font-medium">Aucun contact trouvé</h3>
+              <p className="text-muted-foreground mt-1">Essayez d'ajuster votre recherche ou vos filtres</p>
               <Button 
                 variant="outline" 
                 className="mt-4"
@@ -489,7 +488,7 @@ const Contacts = () => {
                   setRelationshipFilter(null);
                 }}
               >
-                Clear filters
+                Effacer les filtres
               </Button>
             </div>
           </Card>

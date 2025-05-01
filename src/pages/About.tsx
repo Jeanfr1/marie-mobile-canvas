@@ -7,9 +7,9 @@ const About = () => {
     <div className="container mx-auto py-12">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold tracking-tight mb-4">About Marie</h1>
+          <h1 className="text-4xl font-bold tracking-tight mb-4">À propos de Marie</h1>
           <p className="text-lg text-muted-foreground">
-            Building the future of team collaboration
+            Construire l'avenir de la collaboration d'équipe
           </p>
         </div>
 
@@ -17,21 +17,21 @@ const About = () => {
           <CardContent className="p-6">
             <div className="prose prose-lg max-w-none">
               <p className="text-lg leading-relaxed mb-6">
-                Marie is a modern, accessible, and performant web application designed to help teams work better together. Our platform combines powerful features with an intuitive interface to create the perfect environment for collaboration and productivity.
+                Marie est une application web moderne, accessible et performante, conçue pour aider les équipes à mieux travailler ensemble. Notre plateforme combine des fonctionnalités puissantes avec une interface intuitive pour créer l'environnement parfait pour la collaboration et la productivité.
               </p>
               
               <p className="text-lg leading-relaxed mb-6">
-                Founded in 2024, we've been working tirelessly to create tools that make work more efficient and enjoyable. Our team is passionate about delivering the best possible experience for our users.
+                Fondée en 2024, nous travaillons sans relâche pour créer des outils qui rendent le travail plus efficace et agréable. Notre équipe est passionnée par l'offre de la meilleure expérience possible pour nos utilisateurs.
               </p>
 
               <div className="grid md:grid-cols-3 gap-6 mt-8">
                 <div className="text-center">
                   <h3 className="text-3xl font-bold text-primary mb-2">1M+</h3>
-                  <p className="text-muted-foreground">Active Users</p>
+                  <p className="text-muted-foreground">Utilisateurs Actifs</p>
                 </div>
                 <div className="text-center">
                   <h3 className="text-3xl font-bold text-primary mb-2">50+</h3>
-                  <p className="text-muted-foreground">Countries</p>
+                  <p className="text-muted-foreground">Pays</p>
                 </div>
                 <div className="text-center">
                   <h3 className="text-3xl font-bold text-primary mb-2">24/7</h3>
@@ -44,10 +44,10 @@ const About = () => {
 
         <div className="text-center">
           <Button size="lg" className="mr-4">
-            Contact Us
+            Contactez-nous
           </Button>
           <Button variant="outline" size="lg">
-            Learn More
+            En savoir plus
           </Button>
         </div>
       </div>

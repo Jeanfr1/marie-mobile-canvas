@@ -46,15 +46,15 @@ const Dashboard = () => {
 
   // State for recent gifts and upcoming events
   const [recentGifts, setRecentGifts] = useState<Gift[]>([
-    { id: 1, name: "Birthday Present", from: "Sarah", date: "2025-04-15", status: "Thank you sent" },
-    { id: 2, name: "Anniversary Gift", from: "Michael", date: "2025-04-10", status: "Pending" },
-    { id: 3, name: "Housewarming Gift", from: "Lisa", date: "2025-04-05", status: "Thank you sent" }
+    { id: 1, name: "Cadeau d'anniversaire", from: "Sarah", date: "2025-04-15", status: "Remerciement envoyé" },
+    { id: 2, name: "Cadeau d'anniversaire de mariage", from: "Michael", date: "2025-04-10", status: "En attente" },
+    { id: 3, name: "Cadeau de pendaison de crémaillère", from: "Lisa", date: "2025-04-05", status: "Remerciement envoyé" }
   ]);
 
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([
-    { id: 1, name: "Mom's Birthday", date: "2025-05-10", daysLeft: 14 },
-    { id: 2, name: "Wedding Anniversary", date: "2025-06-15", daysLeft: 50 },
-    { id: 3, name: "Friend's Graduation", date: "2025-05-25", daysLeft: 29 }
+    { id: 1, name: "Anniversaire de maman", date: "2025-05-10", daysLeft: 14 },
+    { id: 2, name: "Anniversaire de mariage", date: "2025-06-15", daysLeft: 50 },
+    { id: 3, name: "Remise de diplôme de l'ami", date: "2025-05-25", daysLeft: 29 }
   ]);
 
   // Load data from localStorage when component mounts
@@ -182,10 +182,10 @@ const Dashboard = () => {
       <section className="text-center py-10">
         <div className="max-w-3xl mx-auto space-y-6">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
-            Gift Tracker Dashboard
+            Tableau de Bord de Suivi des Cadeaux
           </h1>
           <p className="text-xl text-muted-foreground">
-            Track your gifts, manage contacts, and never miss an important date
+            Suivez vos cadeaux, gérez vos contacts et ne manquez jamais une date importante
           </p>
         </div>
       </section>
@@ -194,26 +194,26 @@ const Dashboard = () => {
         <Card className="hover:shadow-md transition-shadow duration-300">
           <CardHeader className="pb-2">
             <div className="flex justify-between items-center">
-              <CardTitle className="text-lg font-medium">Gifts Received</CardTitle>
+              <CardTitle className="text-lg font-medium">Cadeaux Reçus</CardTitle>
               <Gift className="h-5 w-5 text-primary" />
             </div>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{stats.giftsReceived}</div>
-            <p className="text-muted-foreground mt-1 text-sm">Total gifts tracked</p>
+            <p className="text-muted-foreground mt-1 text-sm">Total des cadeaux suivis</p>
           </CardContent>
         </Card>
 
         <Card className="hover:shadow-md transition-shadow duration-300">
           <CardHeader className="pb-2">
             <div className="flex justify-between items-center">
-              <CardTitle className="text-lg font-medium">Gifts Given</CardTitle>
+              <CardTitle className="text-lg font-medium">Cadeaux Offerts</CardTitle>
               <Gift className="h-5 w-5 text-secondary" />
             </div>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{stats.giftsGiven}</div>
-            <p className="text-muted-foreground mt-1 text-sm">Total gifts given</p>
+            <p className="text-muted-foreground mt-1 text-sm">Total des cadeaux offerts</p>
           </CardContent>
         </Card>
 
@@ -226,20 +226,20 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{stats.contacts}</div>
-            <p className="text-muted-foreground mt-1 text-sm">People in your network</p>
+            <p className="text-muted-foreground mt-1 text-sm">Personnes dans votre réseau</p>
           </CardContent>
         </Card>
 
         <Card className="hover:shadow-md transition-shadow duration-300">
           <CardHeader className="pb-2">
             <div className="flex justify-between items-center">
-              <CardTitle className="text-lg font-medium">Coming Up</CardTitle>
+              <CardTitle className="text-lg font-medium">À Venir</CardTitle>
               <Calendar className="h-5 w-5 text-secondary" />
             </div>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{stats.upcomingEvents}</div>
-            <p className="text-muted-foreground mt-1 text-sm">Events this month</p>
+            <p className="text-muted-foreground mt-1 text-sm">Événements ce mois-ci</p>
           </CardContent>
         </Card>
       </div>
@@ -248,14 +248,14 @@ const Dashboard = () => {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Recent Gifts</CardTitle>
+              <CardTitle>Cadeaux récents</CardTitle>
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={handleViewAllGifts}
                 className="gap-2"
               >
-                View All
+                Tout voir
                 <Eye className="h-4 w-4" />
               </Button>
             </div>
@@ -266,9 +266,9 @@ const Dashboard = () => {
                 <div key={gift.id} className="flex items-center justify-between border-b pb-3">
                   <div>
                     <h4 className="font-medium">{gift.name}</h4>
-                    <p className="text-sm text-muted-foreground">From: {gift.from} • {gift.date}</p>
+                    <p className="text-sm text-muted-foreground">De: {gift.from} • {gift.date}</p>
                   </div>
-                  <Badge variant={gift.status === "Pending" ? "outline" : "secondary"}>
+                  <Badge variant={gift.status === "En attente" ? "outline" : "secondary"}>
                     {gift.status}
                   </Badge>
                 </div>
@@ -280,14 +280,14 @@ const Dashboard = () => {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Upcoming Events</CardTitle>
+              <CardTitle>Événements à venir</CardTitle>
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={handleAddEvent}
                 className="gap-2"
               >
-                Add Event
+                Ajouter un événement
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
@@ -306,7 +306,7 @@ const Dashboard = () => {
                     </div>
                   </div>
                   <Badge variant={event.daysLeft < 15 ? "destructive" : "outline"}>
-                    {event.daysLeft} days left
+                    {event.daysLeft} jours restants
                   </Badge>
                 </div>
               ))}
@@ -323,8 +323,8 @@ const Dashboard = () => {
                 <Bell className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold">Enable Reminders</h3>
-                <p className="text-muted-foreground">Never miss an important date or thank you note</p>
+                <h3 className="text-lg font-semibold">Activer les rappels</h3>
+                <p className="text-muted-foreground">Ne manquez jamais une date importante ou un remerciement</p>
               </div>
             </div>
             <Button 
@@ -332,7 +332,7 @@ const Dashboard = () => {
               onClick={handleSetupNotifications}
               className="gap-2"
             >
-              Set Up Notifications
+              Configurer les notifications
               <Bell className="h-4 w-4" />
             </Button>
           </div>
