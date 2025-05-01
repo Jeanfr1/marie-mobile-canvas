@@ -10,13 +10,15 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/sonner";
+import { DialogDescription } from "@/components/ui/dialog";
 
 interface AddEventDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onEventAdded?: (eventData: { name: string; date: Date }) => void;
 }
 
-export const AddEventDialog = ({ open, onOpenChange }: AddEventDialogProps) => {
+export const AddEventDialog = ({ open, onOpenChange, onEventAdded }: AddEventDialogProps) => {
   const [eventName, setEventName] = useState("");
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,6 +34,12 @@ export const AddEventDialog = ({ open, onOpenChange }: AddEventDialogProps) => {
     // Simulate adding the event
     setTimeout(() => {
       setIsSubmitting(false);
+      
+      // Notify parent component about the new event
+      if (onEventAdded && date) {
+        onEventAdded({ name: eventName, date });
+      }
+      
       toast.success("Event added successfully", {
         description: `${eventName} scheduled for ${format(date, "PPP")}`
       });
@@ -51,6 +59,9 @@ export const AddEventDialog = ({ open, onOpenChange }: AddEventDialogProps) => {
             <CalendarIcon className="h-5 w-5 text-primary" />
             Add New Event
           </DialogTitle>
+          <DialogDescription>
+            Add a new event to track important dates and never miss a celebration.
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4 py-3">

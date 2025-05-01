@@ -1,44 +1,95 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Gift, Users, Calendar, Bell, Eye, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AddEventDialog } from "@/components/events/AddEventDialog";
 import { NotificationsDialog } from "@/components/notifications/NotificationsDialog";
+
+// Define interfaces for our data types
+interface DashboardStats {
+  giftsReceived: number;
+  giftsGiven: number;
+  contacts: number;
+  upcomingEvents: number;
+}
+
+interface Gift {
+  id: number;
+  name: string;
+  from: string;
+  date: string;
+  status: string;
+}
+
+interface Event {
+  id: number;
+  name: string;
+  date: string;
+  daysLeft: number;
+}
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-
-  // Mock data for the dashboard
-  const stats = {
+  
+  // State for tracking dashboard statistics
+  const [stats, setStats] = useState<DashboardStats>({
     giftsReceived: 24,
     giftsGiven: 18,
     contacts: 42,
     upcomingEvents: 3
-  };
+  });
 
-  const recentGifts = [
+  // State for recent gifts and upcoming events
+  const [recentGifts, setRecentGifts] = useState<Gift[]>([
     { id: 1, name: "Birthday Present", from: "Sarah", date: "2025-04-15", status: "Thank you sent" },
     { id: 2, name: "Anniversary Gift", from: "Michael", date: "2025-04-10", status: "Pending" },
     { id: 3, name: "Housewarming Gift", from: "Lisa", date: "2025-04-05", status: "Thank you sent" }
-  ];
+  ]);
 
-  const upcomingEvents = [
+  const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([
     { id: 1, name: "Mom's Birthday", date: "2025-05-10", daysLeft: 14 },
     { id: 2, name: "Wedding Anniversary", date: "2025-06-15", daysLeft: 50 },
     { id: 3, name: "Friend's Graduation", date: "2025-05-25", daysLeft: 29 }
-  ];
+  ]);
+  
+  // Handle adding a new event
+  const handleAddEvent = () => {
+    setIsAddEventOpen(true);
+  };
+  
+  // Event handler for when a new event is added
+  const handleEventAdded = (newEvent: { name: string; date: Date }) => {
+    const today = new Date();
+    const eventDate = new Date(newEvent.date);
+    const daysLeft = Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    const event = {
+      id: upcomingEvents.length + 1,
+      name: newEvent.name,
+      date: newEvent.date.toISOString().split('T')[0],
+      daysLeft
+    };
+    
+    // Update events state
+    setUpcomingEvents(prev => {
+      const updated = [...prev, event].sort((a, b) => a.daysLeft - b.daysLeft);
+      // Keep only the most recent events if there are more than 3
+      return updated.slice(0, 3);
+    });
+    
+    // Update stats
+    setStats(prev => ({
+      ...prev,
+      upcomingEvents: prev.upcomingEvents + 1
+    }));
+  };
   
   const handleViewAllGifts = () => {
     navigate("/gifts-received");
-  };
-  
-  const handleAddEvent = () => {
-    setIsAddEventOpen(true);
   };
   
   const handleSetupNotifications = () => {
@@ -208,7 +259,11 @@ const Dashboard = () => {
       </Card>
       
       {/* Dialogs */}
-      <AddEventDialog open={isAddEventOpen} onOpenChange={setIsAddEventOpen} />
+      <AddEventDialog 
+        open={isAddEventOpen} 
+        onOpenChange={setIsAddEventOpen} 
+        onEventAdded={handleEventAdded} 
+      />
       <NotificationsDialog open={isNotificationsOpen} onOpenChange={setIsNotificationsOpen} />
     </div>
   );
