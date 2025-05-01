@@ -1,10 +1,18 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Gift, Users, Calendar, Bell } from "lucide-react";
+import { Gift, Users, Calendar, Bell, Eye, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { AddEventDialog } from "@/components/events/AddEventDialog";
+import { NotificationsDialog } from "@/components/notifications/NotificationsDialog";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const [isAddEventOpen, setIsAddEventOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+
   // Mock data for the dashboard
   const stats = {
     giftsReceived: 24,
@@ -24,7 +32,19 @@ const Dashboard = () => {
     { id: 2, name: "Wedding Anniversary", date: "2025-06-15", daysLeft: 50 },
     { id: 3, name: "Friend's Graduation", date: "2025-05-25", daysLeft: 29 }
   ];
-
+  
+  const handleViewAllGifts = () => {
+    navigate("/gifts-received");
+  };
+  
+  const handleAddEvent = () => {
+    setIsAddEventOpen(true);
+  };
+  
+  const handleSetupNotifications = () => {
+    setIsNotificationsOpen(true);
+  };
+  
   return (
     <div className="space-y-8">
       <section className="text-center py-10">
@@ -97,8 +117,14 @@ const Dashboard = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Recent Gifts</CardTitle>
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleViewAllGifts}
+                className="gap-2"
+              >
                 View All
+                <Eye className="h-4 w-4" />
               </Button>
             </div>
           </CardHeader>
@@ -123,8 +149,14 @@ const Dashboard = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Upcoming Events</CardTitle>
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleAddEvent}
+                className="gap-2"
+              >
                 Add Event
+                <Plus className="h-4 w-4" />
               </Button>
             </div>
           </CardHeader>
@@ -163,12 +195,21 @@ const Dashboard = () => {
                 <p className="text-muted-foreground">Never miss an important date or thank you note</p>
               </div>
             </div>
-            <Button size="lg">
+            <Button 
+              size="lg" 
+              onClick={handleSetupNotifications}
+              className="gap-2"
+            >
               Set Up Notifications
+              <Bell className="h-4 w-4" />
             </Button>
           </div>
         </CardContent>
       </Card>
+      
+      {/* Dialogs */}
+      <AddEventDialog open={isAddEventOpen} onOpenChange={setIsAddEventOpen} />
+      <NotificationsDialog open={isNotificationsOpen} onOpenChange={setIsNotificationsOpen} />
     </div>
   );
 };
