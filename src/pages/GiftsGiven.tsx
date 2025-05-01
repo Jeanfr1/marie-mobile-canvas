@@ -1,17 +1,19 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Gift, Search, Image } from "lucide-react";
+import { Gift, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AddGiftDialog } from "@/components/gifts/AddGiftDialog";
 import { GiftDetailsDialog } from "@/components/gifts/GiftDetailsDialog";
 import { GiftFilters } from "@/components/gifts/GiftFilters";
+import { EditGiftDialog } from "@/components/gifts/EditGiftDialog";
 
 const GiftsGiven = () => {
   const [selectedGift, setSelectedGift] = useState<any | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   const gifts = [
     { 
@@ -55,6 +57,11 @@ const GiftsGiven = () => {
   const handleViewDetails = (gift: any) => {
     setSelectedGift(gift);
     setIsDetailsOpen(true);
+  };
+
+  const handleEdit = (gift: any) => {
+    setSelectedGift(gift);
+    setIsEditOpen(true);
   };
 
   return (
@@ -135,10 +142,7 @@ const GiftsGiven = () => {
                         variant="outline" 
                         size="sm" 
                         className="flex-1"
-                        onClick={() => {
-                          setSelectedGift(gift);
-                          setIsEditMode(true);
-                        }}
+                        onClick={() => handleEdit(gift)}
                       >
                         Edit
                       </Button>
@@ -152,12 +156,20 @@ const GiftsGiven = () => {
       </div>
 
       {selectedGift && (
-        <GiftDetailsDialog
-          isOpen={isDetailsOpen}
-          onClose={() => setIsDetailsOpen(false)}
-          gift={selectedGift}
-          type="given"
-        />
+        <>
+          <GiftDetailsDialog
+            isOpen={isDetailsOpen}
+            onClose={() => setIsDetailsOpen(false)}
+            gift={selectedGift}
+            type="given"
+          />
+          
+          <EditGiftDialog
+            isOpen={isEditOpen}
+            onClose={() => setIsEditOpen(false)}
+            gift={selectedGift}
+          />
+        </>
       )}
     </div>
   );
