@@ -1,33 +1,30 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Gift, Search } from "lucide-react";
+import { Gift, Search, Image } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AddGiftDialog } from "@/components/gifts/AddGiftDialog";
 import { GiftDetailsDialog } from "@/components/gifts/GiftDetailsDialog";
 import { GiftFilters } from "@/components/gifts/GiftFilters";
 import { EditGiftDialog } from "@/components/gifts/EditGiftDialog";
+import { GiftItem } from "@/pages/GiftsReceived";
+import { dispatchGlobalEvent } from "@/pages/GiftsReceived";
+import { toast } from "@/components/ui/sonner";
 
-// Define a proper type for our gift object
-interface GiftItem {
-  id: number;
-  name: string;
+// Extended GiftItem interface for given gifts (with 'to' instead of 'from')
+interface GivenGiftItem extends Omit<GiftItem, 'from'> {
   to: string;
-  date: string;
-  occasion: string;
-  cost: string;
-  image: string | null;
 }
 
 const GiftsGiven = () => {
-  const [selectedGift, setSelectedGift] = useState<GiftItem | null>(null);
+  const [selectedGift, setSelectedGift] = useState<GivenGiftItem | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
-  const gifts: GiftItem[] = [
+  
+  const [gifts, setGifts] = useState<GivenGiftItem[]>([
     { 
       id: 1, 
       name: "Smart Watch", 
@@ -35,7 +32,8 @@ const GiftsGiven = () => {
       date: "2025-02-15", 
       occasion: "Birthday", 
       cost: "$199.99",
-      image: "https://images.unsplash.com/photo-1466721591366-2d5fba72006d?w=300&h=200&fit=crop"
+      image: "https://images.unsplash.com/photo-1466721591366-2d5fba72006d?w=300&h=200&fit=crop",
+      thanked: false
     },
     { 
       id: 2, 
@@ -44,7 +42,8 @@ const GiftsGiven = () => {
       date: "2025-03-10", 
       occasion: "Anniversary", 
       cost: "$75.00",
-      image: null
+      image: null,
+      thanked: false
     },
     { 
       id: 3, 
@@ -53,7 +52,8 @@ const GiftsGiven = () => {
       date: "2025-04-05", 
       occasion: "Graduation", 
       cost: "$89.95",
-      image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=300&h=200&fit=crop"
+      image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=300&h=200&fit=crop",
+      thanked: false
     },
     { 
       id: 4, 
@@ -62,22 +62,48 @@ const GiftsGiven = () => {
       date: "2025-04-16", 
       occasion: "Appreciation", 
       cost: "$200.00",
-      image: null
+      image: null,
+      thanked: false
     }
-  ];
+  ]);
 
-  const handleViewDetails = (gift: GiftItem) => {
+  // When component mounts, load gifts from localStorage if available
+  useEffect(() => {
+    const savedGifts = localStorage.getItem('givenGifts');
+    if (savedGifts) {
+      setGifts(JSON.parse(savedGifts));
+    }
+  }, []);
+
+  // When gifts change, save to localStorage and update dashboard
+  useEffect(() => {
+    localStorage.setItem('givenGifts', JSON.stringify(gifts));
+    // Update dashboard stats
+    dispatchGlobalEvent('gifts-updated', { type: 'given', count: gifts.length });
+  }, [gifts]);
+
+  const handleViewDetails = (gift: GivenGiftItem) => {
     setSelectedGift(gift);
     setIsDetailsOpen(true);
   };
 
-  const handleEdit = (gift: GiftItem) => {
+  const handleEdit = (gift: GivenGiftItem) => {
     setSelectedGift(gift);
     setIsEditOpen(true);
   };
 
+  const handleAddGift = (newGift: GivenGiftItem) => {
+    setGifts(prevGifts => [...prevGifts, newGift]);
+    
+    toast.success("New gift added!", {
+      description: `${newGift.name} for ${newGift.to} has been added to your gifts.`
+    });
+  };
+
   // Filter gifts based on search query
   const filteredGifts = gifts.filter((gift) => {
+    if (!searchQuery.trim()) return true;
+    
     const query = searchQuery.toLowerCase();
     return (
       gift.name.toLowerCase().includes(query) ||
@@ -93,7 +119,7 @@ const GiftsGiven = () => {
           <h1 className="text-3xl font-bold tracking-tight">Gifts Given</h1>
           <p className="text-muted-foreground mt-1">Track and manage gifts you've given to others</p>
         </div>
-        <AddGiftDialog type="given" />
+        <AddGiftDialog type="given" onGiftAdded={handleAddGift} />
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 justify-between">
@@ -129,7 +155,7 @@ const GiftsGiven = () => {
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full bg-gray-100">
-                      <Gift className="h-12 w-12 text-muted-foreground" />
+                      <Image className="h-12 w-12 text-muted-foreground" />
                     </div>
                   )}
                 </div>
@@ -192,14 +218,14 @@ const GiftsGiven = () => {
           <GiftDetailsDialog
             isOpen={isDetailsOpen}
             onClose={() => setIsDetailsOpen(false)}
-            gift={selectedGift}
+            gift={selectedGift as unknown as GiftItem}
             type="given"
           />
           
           <EditGiftDialog
             isOpen={isEditOpen}
             onClose={() => setIsEditOpen(false)}
-            gift={selectedGift}
+            gift={selectedGift as any}
           />
         </>
       )}

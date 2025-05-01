@@ -1,4 +1,6 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { GiftItem } from "@/pages/GiftsReceived";
 
 interface GiftDetailsDialogProps {
@@ -28,7 +30,7 @@ export const GiftDetailsDialog = ({ isOpen, onClose, gift, type }: GiftDetailsDi
             )}
             <h3 className="font-semibold">{gift.name}</h3>
             <p className="text-sm text-muted-foreground">
-              {type === 'received' ? `From: ${gift.from}` : `To: ${gift.to}`}
+              {type === 'received' ? `From: ${gift.from}` : `To: ${gift.to || 'Unknown'}`}
             </p>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
