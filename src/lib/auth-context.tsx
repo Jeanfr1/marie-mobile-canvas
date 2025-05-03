@@ -5,11 +5,11 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-import { Auth } from "aws-amplify";
-import { CognitoUser } from "@aws-amplify/auth";
+import { fetchAuthSession, fetchUserAttributes, getCurrentUser } from 'aws-amplify/auth';
+import { AuthSignInOutput, signIn, signOut, signUp, confirmSignUp, resetPassword, confirmResetPassword } from 'aws-amplify/auth';
 
 interface AuthContextType {
-  user: CognitoUser | null;
+  user: any | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   authError: string | null;
@@ -32,19 +32,19 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const formatAuthError = (error: any): string => {
   console.error("Auth error details:", error);
 
-  if (error.code === "NotAuthorizedException") {
+  if (error.name === "NotAuthorizedException") {
     return "Incorrect username or password";
   }
 
-  if (error.code === "UserNotFoundException") {
+  if (error.name === "UserNotFoundException") {
     return "User does not exist";
   }
 
-  if (error.code === "UserNotConfirmedException") {
+  if (error.name === "UserNotConfirmedException") {
     return "User is not confirmed. Please check your email for verification code";
   }
 
-  if (error.code === "NetworkError") {
+  if (error.name === "NetworkError" || error.message?.includes("network")) {
     return "Network error. Please check your internet connection";
   }
 
@@ -52,20 +52,30 @@ const formatAuthError = (error: any): string => {
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<CognitoUser | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
-    checkUser();
+    checkAuth();
   }, []);
 
-  async function checkUser() {
+  async function checkAuth() {
     try {
       console.log("Checking current authenticated user...");
-      const currentUser = await Auth.currentAuthenticatedUser();
-      console.log("User authenticated successfully");
-      setUser(currentUser);
+      setIsLoading(true);
+
+      // Get the current authenticated user
+      const currentUser = await getCurrentUser();
+
+      // Get session info
+      const session = await fetchAuthSession();
+
+      // Get user attributes
+      const attributes = await fetchUserAttributes();
+
+      console.log("User authenticated successfully", { currentUser, attributes });
+      setUser({ ...currentUser, attributes });
     } catch (error) {
       console.log("No authenticated user found", error);
       setUser(null);
@@ -78,14 +88,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthError(null);
   };
 
-  const signIn = async (username: string, password: string) => {
+  const signInUser = async (username: string, password: string) => {
     try {
       clearAuthError();
       console.log(`Attempting to sign in user: ${username}`);
       setIsLoading(true);
-      const user = await Auth.signIn(username, password);
-      console.log("Sign in successful");
-      setUser(user);
+
+      const { isSignedIn, nextStep } = await signIn({ username, password });
+
+      if (isSignedIn) {
+        console.log("Sign in successful");
+        await checkAuth(); // Refresh user data
+      } else {
+        console.log("Additional steps required:", nextStep);
+        // Handle additional steps if needed (MFA, etc.)
+        switch (nextStep.signInStep) {
+          case 'CONFIRM_SIGN_UP':
+            throw new Error("User is not confirmed. Please check your email for verification code.");
+          case 'RESET_PASSWORD':
+            throw new Error("Password reset required. Please reset your password.");
+          default:
+            throw new Error(`Additional step required: ${nextStep.signInStep}`);
+        }
+      }
     } catch (error: any) {
       console.error("Sign in error:", error);
       const errorMessage = formatAuthError(error);
@@ -96,12 +121,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signOut = async () => {
+  const signOutUser = async () => {
     try {
       clearAuthError();
       console.log("Signing out...");
       setIsLoading(true);
-      await Auth.signOut();
+      await signOut();
       console.log("Sign out successful");
       setUser(null);
     } catch (error: any) {
@@ -114,19 +139,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signUp = async (username: string, password: string, email: string) => {
+  const signUpUser = async (username: string, password: string, email: string) => {
     try {
       clearAuthError();
       console.log(`Attempting to sign up user: ${username}`);
       setIsLoading(true);
-      await Auth.signUp({
+      const { isSignUpComplete, userId, nextStep } = await signUp({
         username,
         password,
-        attributes: {
-          email,
+        options: {
+          userAttributes: {
+            email,
+          },
         },
       });
-      console.log("Sign up successful");
+
+      console.log("Sign up result:", { isSignUpComplete, userId, nextStep });
+
+      if (!isSignUpComplete) {
+        console.log("Additional steps required for sign up:", nextStep);
+      }
+
+      console.log("Sign up successful, confirmation needed");
     } catch (error: any) {
       console.error("Sign up error:", error);
       const errorMessage = formatAuthError(error);
@@ -137,13 +171,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const confirmSignUp = async (username: string, code: string) => {
+  const confirmSignUpUser = async (username: string, code: string) => {
     try {
       clearAuthError();
       console.log(`Confirming sign up for user: ${username}`);
       setIsLoading(true);
-      await Auth.confirmSignUp(username, code);
-      console.log("Confirm sign up successful");
+      const { isSignUpComplete } = await confirmSignUp({ username, confirmationCode: code });
+
+      if (isSignUpComplete) {
+        console.log("Confirm sign up successful");
+      } else {
+        throw new Error("Sign up confirmation not complete. Additional steps may be required.");
+      }
     } catch (error: any) {
       console.error("Confirm sign up error:", error);
       const errorMessage = formatAuthError(error);
@@ -154,12 +193,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const forgotPassword = async (username: string) => {
+  const forgotPasswordUser = async (username: string) => {
     try {
       clearAuthError();
       console.log(`Sending password reset for user: ${username}`);
       setIsLoading(true);
-      await Auth.forgotPassword(username);
+      await resetPassword({ username });
       console.log("Password reset request successful");
     } catch (error: any) {
       console.error("Forgot password error:", error);
@@ -171,7 +210,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const forgotPasswordSubmit = async (
+  const forgotPasswordSubmitUser = async (
     username: string,
     code: string,
     newPassword: string
@@ -180,8 +219,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearAuthError();
       console.log(`Submitting new password for user: ${username}`);
       setIsLoading(true);
-      await Auth.forgotPasswordSubmit(username, code, newPassword);
-      console.log("Password reset successful");
+
+      const { isPasswordReset } = await confirmResetPassword({
+        username,
+        confirmationCode: code,
+        newPassword
+      });
+
+      if (isPasswordReset) {
+        console.log("Password reset successful");
+      } else {
+        throw new Error("Password reset not complete. Additional steps may be required.");
+      }
     } catch (error: any) {
       console.error("Forgot password submit error:", error);
       const errorMessage = formatAuthError(error);
@@ -197,12 +246,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated: !!user,
     isLoading,
     authError,
-    signIn,
-    signOut,
-    signUp,
-    confirmSignUp,
-    forgotPassword,
-    forgotPasswordSubmit,
+    signIn: signInUser,
+    signOut: signOutUser,
+    signUp: signUpUser,
+    confirmSignUp: confirmSignUpUser,
+    forgotPassword: forgotPasswordUser,
+    forgotPasswordSubmit: forgotPasswordSubmitUser,
     clearAuthError,
   };
 

@@ -13,37 +13,25 @@ const config = isProduction ? productionAwsConfig : awsConfig;
 // Configure Amplify based on environment
 Amplify.configure({
   Auth: {
-    region: config.region,
-    userPoolId: config.userPoolId,
-    userPoolWebClientId: config.userPoolWebClientId,
-    // Don't use OAuth for now as it complicates the flow
-    // We'll stick with basic username/password auth
-  },
-  Storage: {
-    AWSS3: {
-      bucket: config.bucketName,
+    Cognito: {
+      userPoolId: config.userPoolId,
+      userPoolClientId: config.userPoolWebClientId,
       region: config.region,
     },
   },
   API: {
-    endpoints: [
-      {
-        name: "GiftTrackerAPI",
+    REST: {
+      GiftTrackerAPI: {
         endpoint: config.apiEndpoint,
         region: config.region,
-        custom_header: async () => {
-          try {
-            const session = await Amplify.Auth.currentSession();
-            return {
-              Authorization: `Bearer ${session.getIdToken().getJwtToken()}`,
-            };
-          } catch (error) {
-            console.log("Error generating auth header:", error);
-            return {};
-          }
-        },
       },
-    ],
+    },
+  },
+  Storage: {
+    S3: {
+      bucket: config.bucketName,
+      region: config.region,
+    },
   },
 });
 
@@ -52,9 +40,7 @@ if (isProduction) {
   console.log("Running in production environment with AWS config:", {
     region: config.region,
     userPoolId: config.userPoolId,
-    userPoolWebClientId: config.userPoolWebClientId,
+    userPoolClientId: config.userPoolWebClientId,
     apiEndpoint: config.apiEndpoint,
   });
-  // Enable more verbose logging for auth issues
-  Amplify.Logger.LOG_LEVEL = "DEBUG";
 }
