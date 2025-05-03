@@ -4,22 +4,17 @@ import { awsConfig } from "../config/aws-config";
 // Get the environment from the runtime
 const isProduction = window.location.hostname === "mgiftlist.netlify.app";
 
+console.log("Current hostname:", window.location.hostname);
+console.log("Is production environment:", isProduction);
+
 // Configure Amplify based on environment
 Amplify.configure({
   Auth: {
     region: awsConfig.region,
     userPoolId: awsConfig.userPoolId,
     userPoolWebClientId: awsConfig.userPoolWebClientId,
-    // Force HTTPS for production
-    oauth: isProduction
-      ? {
-          domain: "mgiftlist-auth.auth.us-east-1.amazoncognito.com",
-          scope: ["email", "profile", "openid"],
-          redirectSignIn: "https://mgiftlist.netlify.app/",
-          redirectSignOut: "https://mgiftlist.netlify.app/",
-          responseType: "code",
-        }
-      : undefined,
+    // Don't use OAuth for now as it complicates the flow
+    // We'll stick with basic username/password auth
   },
   Storage: {
     AWSS3: {
@@ -51,7 +46,12 @@ Amplify.configure({
 
 // Add debugging in production
 if (isProduction) {
-  console.log("Running in production environment");
+  console.log("Running in production environment with AWS config:", {
+    region: awsConfig.region,
+    userPoolId: awsConfig.userPoolId,
+    userPoolWebClientId: awsConfig.userPoolWebClientId,
+    apiEndpoint: awsConfig.apiEndpoint,
+  });
   // Enable more verbose logging for auth issues
   Amplify.Logger.LOG_LEVEL = "DEBUG";
 }
