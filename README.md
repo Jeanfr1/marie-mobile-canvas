@@ -2,12 +2,10 @@
 
 <div align="center">
 
-![Banner](https://via.placeholder.com/1200x400/0a0c10/34d399?text=Gift+Tracker+App)
+  <h2 align="center">A modern fullstack solution for tracking gifts, events & reminders</h2>
 
-### **A modern fullstack solution for tracking gifts, events & reminders**
-
-[![Stars](https://img.shields.io/github/stars/Jeanfr1/marie-mobile-canvas?style=for-the-badge&logo=github&color=f97316&logoColor=ffffff&labelColor=171717)](#)
-[![Forks](https://img.shields.io/github/forks/Jeanfr1/marie-mobile-canvas?style=for-the-badge&logo=github&color=a855f7&logoColor=ffffff&labelColor=171717)](#)
+[![Stars](https://img.shields.io/github/stars/Jeanfr1/marie-mobile-canvas?style=for-the-badge&logo=github&color=f97316&logoColor=ffffff&labelColor=171717)](https://github.com/Jeanfr1/marie-mobile-canvas/stargazers)
+[![Forks](https://img.shields.io/github/forks/Jeanfr1/marie-mobile-canvas?style=for-the-badge&logo=github&color=a855f7&logoColor=ffffff&labelColor=171717)](https://github.com/Jeanfr1/marie-mobile-canvas/network/members)
 [![AWS](https://img.shields.io/badge/AWS-Powered-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=FF9900&labelColor=202124)](#tech-arsenal)
 [![React](https://img.shields.io/badge/React-Frontend-61DAFB?style=for-the-badge&logo=react&logoColor=61DAFB&labelColor=202124)](#tech-arsenal)
 
@@ -31,9 +29,11 @@
 - ✅ **Mobile-Responsive Design**
 
 </td>
-<td width="50%">
+<td width="50%" align="center">
 
-<img width="100%" src="https://via.placeholder.com/500x300/0a0c10/34d399?text=App+Screenshot" alt="App Screenshot">
+<h1>📱</h1>
+<h3>Modern UI</h3>
+<p>Responsive design for all devices</p>
 
 </td>
 </tr>
@@ -73,29 +73,25 @@
 <table>
 <tr>
   <td width="50%" align="center">
-    <img src="https://via.placeholder.com/400x225/0a0c10/f97316?text=Gift+Tracking" width="100%" alt="Gift Tracking"/>
-    <br />
-    <h3>🎁 Gift Management</h3>
+    <h1 style="font-size: 4rem;">🎁</h1>
+    <h3 style="color: #4DA7DB;">Gift Management</h3>
     <p>Track gifts given and received with detailed information</p>
   </td>
   <td width="50%" align="center">
-    <img src="https://via.placeholder.com/400x225/0a0c10/a855f7?text=Event+Scheduling" width="100%" alt="Event Scheduling"/>
-    <br />
-    <h3>📅 Event Scheduling</h3>
+    <h1 style="font-size: 4rem;">📅</h1>
+    <h3 style="color: #A855F7;">Event Scheduling</h3>
     <p>Plan events and set reminders with automated notifications</p>
   </td>
 </tr>
 <tr>
   <td width="50%" align="center">
-    <img src="https://via.placeholder.com/400x225/0a0c10/34d399?text=Image+Upload" width="100%" alt="Image Upload"/>
-    <br />
-    <h3>🖼️ Image Management</h3>
+    <h1 style="font-size: 4rem;">🖼️</h1>
+    <h3 style="color: #34D399;">Image Management</h3>
     <p>Secure image storage with S3 pre-signed URLs</p>
   </td>
   <td width="50%" align="center">
-    <img src="https://via.placeholder.com/400x225/0a0c10/4da7db?text=Secure+Authentication" width="100%" alt="Secure Authentication"/>
-    <br />
-    <h3>🔒 Secure Authentication</h3>
+    <h1 style="font-size: 4rem;">🔒</h1>
+    <h3 style="color: #F97316;">Secure Authentication</h3>
     <p>Robust user authentication via AWS Cognito</p>
   </td>
 </tr>
@@ -104,7 +100,22 @@
 ## 📊 Architecture Overview
 
 <div align="center">
-  <img src="https://via.placeholder.com/800x400/0a0c10/FFFFFF?text=Architecture+Diagram" width="80%" alt="Architecture Diagram"/>
+  <pre>
+  ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+  │             │     │             │     │             │
+  │  React UI   │────▶│ API Gateway │────▶│   Lambda    │
+  │             │     │             │     │             │
+  └─────────────┘     └─────────────┘     └──────┬──────┘
+                                                 │
+                            ┌──────────────────┬─┴───┬─────────────┐
+                            │                  │     │             │
+                            ▼                  ▼     ▼             ▼
+                      ┌──────────┐      ┌──────────┐      ┌──────────┐
+                      │          │      │          │      │          │
+                      │ DynamoDB │      │    S3    │      │ Cognito  │
+                      │          │      │          │      │          │
+                      └──────────┘      └──────────┘      └──────────┘
+  </pre>
 </div>
 
 ## 🚦 Quick Start Guide
@@ -177,7 +188,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## 👨‍💻 Author
 
 <div align="center">
-  <img src="https://via.placeholder.com/150/0a0c10/FFFFFF?text=JA" width="100" style="border-radius:50%"/>
   <h3>Jean Araujo</h3>
 
 [![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Jeanfr1)
