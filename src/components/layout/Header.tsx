@@ -28,6 +28,19 @@ export function Header() {
   const getInitials = () => {
     if (!user) return "GT";
 
+    // First try to get the name from user attributes
+    if (user.attributes && user.attributes.name) {
+      const name = user.attributes.name;
+      // If name contains spaces (first and last name), use first letter of each
+      if (name.includes(" ")) {
+        const nameParts = name.split(" ");
+        return (nameParts[0].charAt(0) + nameParts[1].charAt(0)).toUpperCase();
+      }
+      // Otherwise use the first letter of the name
+      return name.charAt(0).toUpperCase();
+    }
+
+    // Fallback to username if no name attribute
     const username = user.username || "";
     if (!username) return "GT";
 
