@@ -27,7 +27,11 @@ interface AuthContextType {
   authError: string | null;
   signIn: (username: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
-  signUp: (username: string, password: string, email: string) => Promise<void>;
+  signUp: (
+    username: string,
+    password: string,
+    displayName: string
+  ) => Promise<void>;
   confirmSignUp: (username: string, code: string) => Promise<void>;
   forgotPassword: (username: string) => Promise<void>;
   forgotPasswordSubmit: (
@@ -171,22 +175,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUpUser = async (
     username: string,
     password: string,
-    email: string
+    displayName: string
   ) => {
     try {
       clearAuthError();
       console.log(`Attempting to sign up user: ${username}`);
       setIsLoading(true);
-      const { isSignUpComplete, userId, nextStep } = await signUp({
+
+      // Prepare signup parameters
+      const signUpOptions = {
         username,
         password,
         options: {
           userAttributes: {
-            email,
+            name: displayName,
           },
           authFlowType: "USER_PASSWORD_AUTH",
         },
-      });
+      };
+
+      // If username is a valid email, store it as the email attribute
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (emailRegex.test(username)) {
+        signUpOptions.options.userAttributes.email = username;
+      }
+
+      const { isSignUpComplete, userId, nextStep } = await signUp(
+        signUpOptions
+      );
 
       console.log("Sign up result:", { isSignUpComplete, userId, nextStep });
 

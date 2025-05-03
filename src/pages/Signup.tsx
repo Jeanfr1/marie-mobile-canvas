@@ -17,7 +17,7 @@ import { Gift } from "lucide-react";
 
 export default function Signup() {
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +31,13 @@ export default function Signup() {
     e.preventDefault();
     setError(null);
 
+    // Validate email format in username field
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(username)) {
+      setError("Veuillez entrer une adresse email valide pour l'identifiant de connexion");
+      return;
+    }
+
     // Validate password match
     if (password !== confirmPassword) {
       setError("Les mots de passe ne correspondent pas");
@@ -40,7 +47,8 @@ export default function Signup() {
     setIsLoading(true);
 
     try {
-      await signUp(username, password, email);
+      // Pass display name instead of trying to use it as an email
+      await signUp(username, password, displayName);
       setShowConfirmation(true);
     } catch (err) {
       console.error("Erreur d'inscription:", err);
@@ -103,26 +111,26 @@ export default function Signup() {
                   </Alert>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="username">Identifiant de connexion</Label>
+                  <Label htmlFor="username">Email de connexion</Label>
                   <Input
                     id="username"
-                    placeholder="Choisissez un identifiant pour vous connecter"
+                    type="email"
+                    placeholder="votre.email@exemple.com"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
                   />
                   <p className="text-xs text-muted-foreground">
-                    Cet identifiant sera utilisé pour vous connecter à l'application
+                    Cet email sera utilisé pour vous connecter à l'application
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="displayName">Nom d'utilisateur</Label>
                   <Input
-                    id="email"
-                    type="email"
-                    placeholder="votre.email@exemple.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    id="displayName"
+                    placeholder="Entrez votre nom"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
                     required
                   />
                 </div>

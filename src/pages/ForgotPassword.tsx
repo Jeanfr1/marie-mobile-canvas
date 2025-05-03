@@ -31,6 +31,14 @@ export default function ForgotPassword() {
     e.preventDefault();
     setError(null);
     setMessage(null);
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(username)) {
+      setError("Veuillez entrer une adresse email valide");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -100,7 +108,7 @@ export default function ForgotPassword() {
             <CardHeader>
               <CardTitle>Mot de passe oublié</CardTitle>
               <CardDescription>
-                Entrez votre identifiant de connexion pour recevoir un code de
+                Entrez votre email de connexion pour recevoir un code de
                 vérification
               </CardDescription>
             </CardHeader>
@@ -117,10 +125,11 @@ export default function ForgotPassword() {
                   </Alert>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="username">Identifiant de connexion</Label>
+                  <Label htmlFor="username">Email de connexion</Label>
                   <Input
                     id="username"
-                    placeholder="Votre identifiant"
+                    type="email"
+                    placeholder="votre.email@exemple.com"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
