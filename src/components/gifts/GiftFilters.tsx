@@ -1,6 +1,11 @@
-
 import { useState } from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -26,21 +31,25 @@ export const GiftFilters = () => {
         <SheetHeader>
           <SheetTitle>Filter Gifts</SheetTitle>
         </SheetHeader>
-        <form onSubmit={handleApplyFilters} className="space-y-4 mt-4">
-          <div className="space-y-2">
-            <Label htmlFor="date-from">Date From</Label>
-            <Input type="date" id="date-from" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="date-to">Date To</Label>
-            <Input type="date" id="date-to" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="occasion">Occasion</Label>
-            <Input id="occasion" placeholder="Filter by occasion" />
-          </div>
-          <Button type="submit" className="w-full">Apply Filters</Button>
-        </form>
+        <div className="overflow-y-auto">
+          <form onSubmit={handleApplyFilters} className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label htmlFor="date-from">Date From</Label>
+              <Input type="date" id="date-from" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="date-to">Date To</Label>
+              <Input type="date" id="date-to" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="occasion">Occasion</Label>
+              <Input id="occasion" placeholder="Filter by occasion" />
+            </div>
+            <Button type="submit" className="w-full">
+              Apply Filters
+            </Button>
+          </form>
+        </div>
       </SheetContent>
     </Sheet>
   );

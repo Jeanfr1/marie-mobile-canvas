@@ -114,17 +114,38 @@ const GiftsReceived = () => {
   };
 
   const handleAddGift = (newGift: GiftItem) => {
-    const giftWithId = {
-      ...newGift,
-      id: Date.now(), // Ensure unique ID
-    };
+    try {
+      const giftWithId = {
+        ...newGift,
+        id: Date.now(), // Ensure unique ID
+      };
 
-    setGifts((prevGifts) => [...prevGifts, giftWithId]);
-    setIsFirstTimeView(false);
+      setGifts((prevGifts) => [...prevGifts, giftWithId]);
+      setIsFirstTimeView(false);
 
-    toast.success("Nouveau cadeau ajouté !", {
-      description: `${newGift.name} de ${newGift.from} a été ajouté à vos cadeaux.`,
-    });
+      // Update localStorage right away
+      if (user) {
+        const userId = user.username;
+        const userDataKey = `userData_${userId}`;
+        const userData = JSON.parse(localStorage.getItem(userDataKey) || "{}");
+        const currentGifts = userData.receivedGifts || [];
+        userData.receivedGifts = [...currentGifts, giftWithId];
+        localStorage.setItem(userDataKey, JSON.stringify(userData));
+
+        // Update dashboard stats
+        dispatchGlobalEvent("gifts-updated", {
+          type: "received",
+          count: currentGifts.length + 1,
+        });
+      }
+
+      toast.success("Nouveau cadeau ajouté !", {
+        description: `${newGift.name} de ${newGift.from} a été ajouté à vos cadeaux.`,
+      });
+    } catch (error) {
+      console.error("Error adding gift:", error);
+      toast.error("Une erreur s'est produite lors de l'ajout du cadeau");
+    }
   };
 
   // Filter gifts based on search query

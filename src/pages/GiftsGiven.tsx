@@ -24,6 +24,7 @@ const GiftsGiven = () => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isFirstTimeView, setIsFirstTimeView] = useState(true);
 
   const [gifts, setGifts] = useState<GivenGiftItem[]>([]);
 
@@ -71,18 +72,40 @@ const GiftsGiven = () => {
   };
 
   const handleAddGift = (newGift: GiftItem) => {
-    // Convert the general gift to a given gift
-    const givenGift: GivenGiftItem = {
-      ...newGift,
-      to: (newGift as any).to || "Inconnu",
-      from: "Moi",
-    };
+    try {
+      const giftWithId = {
+        ...newGift,
+        id: Date.now(), // Ensure unique ID
+      };
 
-    setGifts((prevGifts) => [...prevGifts, givenGift]);
+      setGifts((prevGifts) => [...prevGifts, giftWithId]);
+      setIsFirstTimeView(false);
 
-    toast.success("Nouveau cadeau ajouté !", {
-      description: `${givenGift.name} pour ${givenGift.to} a été ajouté à vos cadeaux.`,
-    });
+      // Update localStorage right away
+      if (user) {
+        const userId = user.username;
+        const userDataKey = `userData_${userId}`;
+        const userData = JSON.parse(localStorage.getItem(userDataKey) || "{}");
+        const currentGifts = userData.givenGifts || [];
+        userData.givenGifts = [...currentGifts, giftWithId];
+        localStorage.setItem(userDataKey, JSON.stringify(userData));
+
+        // Update dashboard stats
+        dispatchGlobalEvent("gifts-updated", {
+          type: "given",
+          count: currentGifts.length + 1,
+        });
+      }
+
+      toast.success("Nouveau cadeau ajouté !", {
+        description: `${newGift.name} pour ${
+          (newGift as GivenGiftItem).to
+        } a été ajouté à vos cadeaux.`,
+      });
+    } catch (error) {
+      console.error("Error adding gift:", error);
+      toast.error("Une erreur s'est produite lors de l'ajout du cadeau");
+    }
   };
 
   // Filter gifts based on search query

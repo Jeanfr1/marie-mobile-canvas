@@ -71,32 +71,37 @@ export const AddGiftDialog = ({ type, onGiftAdded }: AddGiftDialogProps) => {
       return;
     }
 
-    const newGift: GiftItem = {
-      id: Date.now(), // Use timestamp as a simple unique ID
-      name: giftName,
-      from: type === "received" ? person : "Moi",
-      date: date,
-      occasion: occasion,
-      thanked: false,
-      image: imagePreview, // Use the image preview data URL
-    };
+    try {
+      const newGift: GiftItem = {
+        id: Date.now(), // Use timestamp as a simple unique ID
+        name: giftName,
+        from: type === "received" ? person : "Moi",
+        date: date,
+        occasion: occasion,
+        thanked: false,
+        image: imagePreview, // Use the image preview data URL
+      };
 
-    // For given gifts, add the recipient as 'to' and include cost if provided
-    if (type === "given") {
-      (newGift as any).to = person;
-      newGift.cost = cost ? parseFloat(cost) : undefined;
+      // For given gifts, add the recipient as 'to' and include cost if provided
+      if (type === "given") {
+        (newGift as any).to = person;
+        newGift.cost = cost ? parseFloat(cost) : undefined;
+      }
+
+      // Pass the new gift to parent component
+      if (onGiftAdded) {
+        onGiftAdded(newGift);
+      }
+
+      toast.success(
+        `Cadeau ${type === "received" ? "reçu" : "donné"} ajouté avec succès !`
+      );
+      resetForm();
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Error adding gift:", error);
+      toast.error("Une erreur s'est produite lors de l'ajout du cadeau");
     }
-
-    // Pass the new gift to parent component
-    if (onGiftAdded) {
-      onGiftAdded(newGift);
-    }
-
-    toast.success(
-      `Cadeau ${type === "received" ? "reçu" : "donné"} ajouté avec succès !`
-    );
-    resetForm();
-    setIsOpen(false);
   };
 
   return (
