@@ -1,4 +1,3 @@
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { MainLayout } from "./components/layout/MainLayout";
@@ -9,24 +8,42 @@ import GiftsReceived from "./pages/GiftsReceived";
 import GiftsGiven from "./pages/GiftsGiven";
 import Contacts from "./pages/Contacts";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import ForgotPassword from "./pages/ForgotPassword";
+import Welcome from "./pages/Welcome";
+import { AuthProvider } from "./lib/auth-context";
+import { AuthGuard } from "./components/auth/AuthGuard";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<MainLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="gifts-received" element={<GiftsReceived />} />
-          <Route path="gifts-given" element={<GiftsGiven />} />
-          <Route path="contacts" element={<Contacts />} />
-          <Route path="*" element={<NotFound />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
-    <Toaster />
-    <Sonner />
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Public routes */}
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<Welcome />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+
+            {/* Protected routes */}
+            <Route element={<AuthGuard />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/gifts-received" element={<GiftsReceived />} />
+              <Route path="/gifts-given" element={<GiftsGiven />} />
+              <Route path="/contacts" element={<Contacts />} />
+            </Route>
+
+            <Route path="*" element={<NotFound />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+      <Toaster />
+      <Sonner />
+    </AuthProvider>
   </QueryClientProvider>
 );
 
