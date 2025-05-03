@@ -1,0 +1,170 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  GiftTrackerNotifications:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: GiftTracker-Notifications
+      AttributeDefinitions:
+        - AttributeName: notificationId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: notificationId
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  EventReminderLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: EventReminderLambdaPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:Query
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:Scan
+                Resource: !GetAtt GiftTrackerNotifications.Arn
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "arn:aws:logs:*:*:*"
+
+  EventReminderLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: gift-tracker-event-reminder
+      Handler: index.handler
+      Role: !GetAtt EventReminderLambdaRole.Arn
+      Runtime: nodejs18.x
+      Timeout: 30
+      MemorySize: 128
+      Environment:
+        Variables:
+          NOTIFICATIONS_TABLE: !Ref GiftTrackerNotifications
+      Code:
+        S3Bucket: gift-tracker-lambda-code
+        S3Key: event-reminder-lambda.zip
+
+  EventReminderSchedule:
+    Type: AWS::Events::Rule
+    Properties:
+      ScheduleExpression: rate(1 day)
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt EventReminderLambda.Arn
+          Id: "EventReminderLambda"
+
+  PermissionForEventsToInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref EventReminderLambda
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt EventReminderSchedule.Arn
+
+  NotificationsApiLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: NotificationsApiLambdaPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                Resource: !GetAtt GiftTrackerNotifications.Arn
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "arn:aws:logs:*:*:*"
+
+  NotificationsApiLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: gift-tracker-notifications-api
+      Handler: index.handler
+      Role: !GetAtt NotificationsApiLambdaRole.Arn
+      Runtime: nodejs18.x
+      Timeout: 15
+      MemorySize: 128
+      Environment:
+        Variables:
+          NOTIFICATIONS_TABLE: !Ref GiftTrackerNotifications
+      Code:
+        S3Bucket: gift-tracker-lambda-code
+        S3Key: notifications.zip
+
+  NotificationsApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: gift-tracker-api
+      Description: API for Gift Tracker notifications
+
+  NotificationsApiResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt NotificationsApiGateway.RootResourceId
+      PathPart: notifications
+      RestApiId: !Ref NotificationsApiGateway
+
+  NotificationsApiMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: <COGNITO_AUTHORIZER_ID_PLACEHOLDER>
+      HttpMethod: GET
+      ResourceId: !Ref NotificationsApiResource
+      RestApiId: !Ref NotificationsApiGateway
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          - { LambdaArn: !GetAtt NotificationsApiLambda.Arn }
+
+  NotificationsApiLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref NotificationsApiLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub
+        - arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/GET/notifications
+        - { ApiId: !Ref NotificationsApiGateway }
+
+Outputs:
+  NotificationsTableName:
+    Value: !Ref GiftTrackerNotifications
+  EventReminderLambdaName:
+    Value: !Ref EventReminderLambda
+  EventReminderLambdaArn:
+    Value: !GetAtt EventReminderLambda.Arn
+  EventReminderScheduleName:
+    Value: !Ref EventReminderSchedule
+  NotificationsApiLambdaName:
+    Value: !Ref NotificationsApiLambda
+  NotificationsApiEndpoint:
+    Value: !Sub "https://${NotificationsApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/notifications"

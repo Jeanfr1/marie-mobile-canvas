@@ -1,0 +1,9 @@
+{
+  "name": "gift-tracker-lambda-functions",
+  "version": "1.0.0",
+  "description": "Lambda functions for Gift Tracker application",
+  "dependencies": {
+    "aws-sdk": "^2.1467.0",
+    "uuid": "^9.0.1"
+  }
+}

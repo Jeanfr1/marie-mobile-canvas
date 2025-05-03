@@ -1,0 +1,11 @@
+{
+  "name": "event-reminder-lambda",
+  "version": "1.0.0",
+  "main": "event-reminder-lambda.js",
+  "type": "module",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.500.0",
+    "uuid": "^9.0.0",
+    "date-fns": "^3.6.0"
+  }
+}
