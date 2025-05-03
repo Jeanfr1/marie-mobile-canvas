@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import { EditGiftDialog } from "@/components/gifts/EditGiftDialog";
 import { GiftItem } from "@/pages/GiftsReceived";
 import { dispatchGlobalEvent } from "@/pages/GiftsReceived";
 import { toast } from "@/components/ui/sonner";
+import { useAuth } from "@/lib/auth-context";
 
 // Extended GiftItem interface for given gifts (with required 'to' property)
 interface GivenGiftItem extends GiftItem {
@@ -19,72 +19,46 @@ interface GivenGiftItem extends GiftItem {
 }
 
 const GiftsGiven = () => {
+  const { user } = useAuth();
   const [selectedGift, setSelectedGift] = useState<GivenGiftItem | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  
-  const [gifts, setGifts] = useState<GivenGiftItem[]>([
-    { 
-      id: 1, 
-      name: "Montre connectée", 
-      to: "Emma Roberts", 
-      from: "Moi",
-      date: "2025-02-15", 
-      occasion: "Anniversaire", 
-      cost: 199.99,
-      image: "https://images.unsplash.com/photo-1466721591366-2d5fba72006d?w=300&h=200&fit=crop",
-      thanked: false
-    },
-    { 
-      id: 2, 
-      name: "Panier cadeau de vin", 
-      to: "Robert & Mary", 
-      from: "Moi",
-      date: "2025-03-10", 
-      occasion: "Anniversaire de mariage", 
-      cost: 75.00,
-      image: null,
-      thanked: false
-    },
-    { 
-      id: 3, 
-      name: "Bracelet fitness", 
-      to: "Chris Thompson", 
-      from: "Moi",
-      date: "2025-04-05", 
-      occasion: "Remise de diplôme", 
-      cost: 89.95,
-      image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=300&h=200&fit=crop",
-      thanked: false
-    },
-    { 
-      id: 4, 
-      name: "Carte cadeau", 
-      to: "Équipe de bureau", 
-      from: "Moi",
-      date: "2025-04-16", 
-      occasion: "Appréciation", 
-      cost: 200.00,
-      image: null,
-      thanked: false
-    }
-  ]);
+
+  const [gifts, setGifts] = useState<GivenGiftItem[]>([]);
 
   // When component mounts, load gifts from localStorage if available
   useEffect(() => {
-    const savedGifts = localStorage.getItem('givenGifts');
-    if (savedGifts) {
-      setGifts(JSON.parse(savedGifts));
+    if (!user) return;
+
+    const userId = user.username;
+    const userDataKey = `userData_${userId}`;
+    const userData = JSON.parse(localStorage.getItem(userDataKey) || "{}");
+
+    // Load user's given gifts
+    const givenGifts = userData.givenGifts || [];
+    if (givenGifts.length > 0) {
+      setGifts(givenGifts);
     }
-  }, []);
+  }, [user]);
 
   // When gifts change, save to localStorage and update dashboard
   useEffect(() => {
-    localStorage.setItem('givenGifts', JSON.stringify(gifts));
+    if (!user) return;
+
+    const userId = user.username;
+    const userDataKey = `userData_${userId}`;
+    const userData = JSON.parse(localStorage.getItem(userDataKey) || "{}");
+
+    userData.givenGifts = gifts;
+    localStorage.setItem(userDataKey, JSON.stringify(userData));
+
     // Update dashboard stats
-    dispatchGlobalEvent('gifts-updated', { type: 'given', count: gifts.length });
-  }, [gifts]);
+    dispatchGlobalEvent("gifts-updated", {
+      type: "given",
+      count: gifts.length,
+    });
+  }, [gifts, user]);
 
   const handleViewDetails = (gift: GivenGiftItem) => {
     setSelectedGift(gift);
@@ -100,21 +74,21 @@ const GiftsGiven = () => {
     // Convert the general gift to a given gift
     const givenGift: GivenGiftItem = {
       ...newGift,
-      to: (newGift as any).to || 'Inconnu',
-      from: 'Moi'
+      to: (newGift as any).to || "Inconnu",
+      from: "Moi",
     };
-    
-    setGifts(prevGifts => [...prevGifts, givenGift]);
-    
+
+    setGifts((prevGifts) => [...prevGifts, givenGift]);
+
     toast.success("Nouveau cadeau ajouté !", {
-      description: `${givenGift.name} pour ${givenGift.to} a été ajouté à vos cadeaux.`
+      description: `${givenGift.name} pour ${givenGift.to} a été ajouté à vos cadeaux.`,
     });
   };
 
   // Filter gifts based on search query
   const filteredGifts = gifts.filter((gift) => {
     if (!searchQuery.trim()) return true;
-    
+
     const query = searchQuery.toLowerCase();
     return (
       gift.name.toLowerCase().includes(query) ||
@@ -128,7 +102,9 @@ const GiftsGiven = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Cadeaux Offerts</h1>
-          <p className="text-muted-foreground mt-1">Suivez et gérez les cadeaux que vous avez offerts</p>
+          <p className="text-muted-foreground mt-1">
+            Suivez et gérez les cadeaux que vous avez offerts
+          </p>
         </div>
         <AddGiftDialog type="given" onGiftAdded={handleAddGift} />
       </div>
@@ -136,8 +112,8 @@ const GiftsGiven = () => {
       <div className="flex flex-col sm:flex-row gap-4 justify-between">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Rechercher cadeaux, destinataires..." 
+          <Input
+            placeholder="Rechercher cadeaux, destinataires..."
             className="pl-9"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -150,17 +126,22 @@ const GiftsGiven = () => {
         <div className="text-center py-10">
           <Gift className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-medium">Aucun cadeau trouvé</h3>
-          <p className="text-muted-foreground">Essayez d'ajuster votre recherche ou vos filtres</p>
+          <p className="text-muted-foreground">
+            Essayez d'ajuster votre recherche ou vos filtres
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {filteredGifts.map(gift => (
-            <Card key={gift.id} className="overflow-hidden hover:shadow-md transition-shadow duration-300">
+          {filteredGifts.map((gift) => (
+            <Card
+              key={gift.id}
+              className="overflow-hidden hover:shadow-md transition-shadow duration-300"
+            >
               <div className="flex flex-col sm:flex-row h-full">
                 <div className="w-full sm:w-1/3 h-48 sm:h-auto bg-muted relative overflow-hidden">
                   {gift.image ? (
-                    <img 
-                      src={gift.image} 
+                    <img
+                      src={gift.image}
                       alt={gift.name}
                       className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
                     />
@@ -170,20 +151,25 @@ const GiftsGiven = () => {
                     </div>
                   )}
                 </div>
-                
+
                 <div className="flex-1">
                   <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
                       <div>
                         <CardTitle className="text-xl">{gift.name}</CardTitle>
-                        <p className="text-muted-foreground text-sm">Pour: {gift.to}</p>
+                        <p className="text-muted-foreground text-sm">
+                          Pour: {gift.to}
+                        </p>
                       </div>
-                      <Badge variant="secondary" className="bg-secondary/20 text-secondary border-secondary/30">
+                      <Badge
+                        variant="secondary"
+                        className="bg-secondary/20 text-secondary border-secondary/30"
+                      >
                         {gift.cost}€
                       </Badge>
                     </div>
                   </CardHeader>
-                  
+
                   <CardContent>
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-2 text-sm">
@@ -196,19 +182,19 @@ const GiftsGiven = () => {
                           <p className="font-medium">{gift.occasion}</p>
                         </div>
                       </div>
-                      
+
                       <div className="flex gap-2 pt-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
+                        <Button
+                          variant="outline"
+                          size="sm"
                           className="flex-1"
                           onClick={() => handleViewDetails(gift)}
                         >
                           Voir les détails
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
+                        <Button
+                          variant="outline"
+                          size="sm"
                           className="flex-1"
                           onClick={() => handleEdit(gift)}
                         >
@@ -229,14 +215,14 @@ const GiftsGiven = () => {
           <GiftDetailsDialog
             isOpen={isDetailsOpen}
             onClose={() => setIsDetailsOpen(false)}
-            gift={selectedGift as unknown as GiftItem}
+            gift={selectedGift}
             type="given"
           />
-          
+
           <EditGiftDialog
             isOpen={isEditOpen}
             onClose={() => setIsEditOpen(false)}
-            gift={selectedGift as any}
+            gift={selectedGift}
           />
         </>
       )}

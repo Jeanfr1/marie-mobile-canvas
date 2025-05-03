@@ -38,7 +38,7 @@ export default function Login() {
     const handleOffline = () => {
       setIsOnline(false);
       setError(
-        "You are currently offline. Please check your internet connection."
+        "Vous êtes actuellement hors ligne. Veuillez vérifier votre connexion internet."
       );
     };
 
@@ -67,7 +67,7 @@ export default function Login() {
     // Check if online before attempting to sign in
     if (!isOnline) {
       setError(
-        "You are currently offline. Please check your internet connection."
+        "Vous êtes actuellement hors ligne. Veuillez vérifier votre connexion internet."
       );
       return;
     }
@@ -77,14 +77,14 @@ export default function Login() {
 
     try {
       await signIn(username, password);
-      console.log("Login successful, redirecting to:", from);
+      console.log("Connexion réussie, redirection vers:", from);
       navigate(from);
     } catch (err) {
-      console.error("Login error:", err);
+      console.error("Erreur de connexion:", err);
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to sign in. Please check your credentials and try again."
+          : "Échec de la connexion. Veuillez vérifier vos identifiants et réessayer."
       );
     } finally {
       setIsLoading(false);
@@ -95,9 +95,9 @@ export default function Login() {
     <div className="flex min-h-[80vh] flex-col items-center justify-center px-4">
       <div className="mb-8 flex flex-col items-center text-center">
         <Gift className="h-12 w-12 text-primary mb-2" />
-        <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Bienvenue</h1>
         <p className="text-muted-foreground mt-2">
-          Sign in to your account to continue
+          Connectez-vous à votre compte pour continuer
         </p>
         {/* Online/Offline indicator */}
         <div className="flex items-center mt-2">
@@ -111,16 +111,16 @@ export default function Login() {
               isOnline ? "text-green-500 text-xs" : "text-red-500 text-xs"
             }
           >
-            {isOnline ? "Online" : "Offline"}
+            {isOnline ? "En ligne" : "Hors ligne"}
           </span>
         </div>
       </div>
 
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Sign In</CardTitle>
+          <CardTitle>Connexion</CardTitle>
           <CardDescription>
-            Enter your credentials to access your account
+            Entrez vos identifiants pour accéder à votre compte
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -131,11 +131,10 @@ export default function Login() {
               </Alert>
             )}
             <div className="space-y-2">
-              <Label htmlFor="username">Email</Label>
+              <Label htmlFor="username">Identifiant de connexion</Label>
               <Input
                 id="username"
-                type="email"
-                placeholder="your.email@example.com"
+                placeholder="Votre identifiant"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -144,14 +143,14 @@ export default function Login() {
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Mot de passe</Label>
                 <Button
                   variant="link"
                   className="p-0 h-auto text-xs"
                   type="button"
                   onClick={() => navigate("/forgot-password")}
                 >
-                  Forgot password?
+                  Mot de passe oublié?
                 </Button>
               </div>
               <Input
@@ -170,17 +169,17 @@ export default function Login() {
               className="w-full"
               disabled={isLoading || !isOnline}
             >
-              {isLoading ? "Signing in..." : "Sign in"}
+              {isLoading ? "Connexion en cours..." : "Se connecter"}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
-              Don't have an account?{" "}
+              Vous n'avez pas de compte?{" "}
               <Button
                 variant="link"
                 className="p-0 h-auto"
                 type="button"
                 onClick={() => navigate("/signup")}
               >
-                Sign up
+                S'inscrire
               </Button>
             </p>
           </CardFooter>

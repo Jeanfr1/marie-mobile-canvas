@@ -11,9 +11,9 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
-import Welcome from "./pages/Welcome";
 import { AuthProvider } from "./lib/auth-context";
 import { AuthGuard } from "./components/auth/AuthGuard";
+import { RedirectToDashboard } from "./components/auth/RedirectToDashboard";
 
 const queryClient = new QueryClient();
 
@@ -24,7 +24,7 @@ const App = () => (
         <Routes>
           {/* Public routes */}
           <Route element={<MainLayout />}>
-            <Route path="/" element={<Welcome />} />
+            <Route path="/" element={<RedirectToDashboard />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

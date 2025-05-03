@@ -1,10 +1,10 @@
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { Loader2 } from "lucide-react";
+import Welcome from "@/pages/Welcome";
 
-export function AuthGuard() {
+export function RedirectToDashboard() {
   const { isAuthenticated, isLoading } = useAuth();
-  const location = useLocation();
 
   // Show loading spinner while checking authentication
   if (isLoading) {
@@ -16,12 +16,11 @@ export function AuthGuard() {
     );
   }
 
-  // Redirect to login if not authenticated
-  if (!isAuthenticated) {
-    // Save the location they were trying to go to for a successful login
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  // If authenticated, redirect to dashboard
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
   }
 
-  // If authenticated, render the child routes
-  return <Outlet />;
+  // If not authenticated, show the welcome page
+  return <Welcome />;
 }

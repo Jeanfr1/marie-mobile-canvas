@@ -246,22 +246,22 @@ const Dashboard = () => {
         <section className="text-center py-10">
           <div className="max-w-3xl mx-auto space-y-6">
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
-              Welcome to Gift Tracker
+              Bienvenue sur Gift Tracker
             </h1>
             <p className="text-xl text-muted-foreground">
-              Let's start tracking your gifts, contacts, and important dates
+              Commençons à suivre vos cadeaux, contacts et dates importantes
             </p>
           </div>
         </section>
 
         <ContextualHelp
-          title="Getting Started"
-          description="Welcome to Gift Tracker! Here's how to get started:"
+          title="Premiers pas"
+          description="Bienvenue sur Gift Tracker ! Voici comment commencer :"
           steps={[
-            "Add gifts you've received to keep track of them",
-            "Create your contact list with friends and family",
-            "Set up event reminders for important dates",
-            "Explore all the features to manage your gift-giving experience",
+            "Ajoutez les cadeaux que vous avez reçus pour les suivre",
+            "Créez votre liste de contacts avec vos amis et votre famille",
+            "Configurez des rappels d'événements pour les dates importantes",
+            "Explorez toutes les fonctionnalités pour gérer votre expérience d'offre de cadeaux",
           ]}
           helpKey="dashboard_new_user"
           forceShow={true}
@@ -269,34 +269,34 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <EmptyState
-            title="Track your gifts"
-            description="Start by adding gifts you've received or given to keep track of them"
+            title="Suivez vos cadeaux"
+            description="Commencez par ajouter les cadeaux que vous avez reçus ou donnés pour les suivre"
             icon={Gift}
-            actionLabel="Add your first gift"
+            actionLabel="Ajouter votre premier cadeau"
             onAction={handleAddGift}
           />
 
           <EmptyState
-            title="Add your contacts"
-            description="Add people to your contact list to remember their preferences"
+            title="Ajoutez vos contacts"
+            description="Ajoutez des personnes à votre liste de contacts pour vous souvenir de leurs préférences"
             icon={Users}
-            actionLabel="Add your first contact"
+            actionLabel="Ajouter votre premier contact"
             onAction={handleAddContact}
           />
 
           <EmptyState
-            title="Set up reminders"
-            description="Never miss an important date by adding events and reminders"
+            title="Configurez des rappels"
+            description="Ne manquez jamais une date importante en ajoutant des événements et des rappels"
             icon={Calendar}
-            actionLabel="Add your first event"
+            actionLabel="Ajouter votre premier événement"
             onAction={handleAddEvent}
           />
 
           <EmptyState
-            title="Get started with Gift Tracker"
-            description="Discover all the features to manage your gift-giving experience"
+            title="Démarrer avec Gift Tracker"
+            description="Découvrez toutes les fonctionnalités pour gérer votre expérience d'offre de cadeaux"
             icon={Sparkles}
-            actionLabel="See gift ideas"
+            actionLabel="Voir les idées de cadeaux"
             onAction={() => navigate("/gifts-given")}
           />
         </div>
@@ -311,18 +311,19 @@ const Dashboard = () => {
       <section className="text-center py-10">
         <div className="max-w-3xl mx-auto space-y-6">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
-            Gift Dashboard
+            Tableau de bord des cadeaux
           </h1>
           <p className="text-xl text-muted-foreground">
-            Track your gifts, manage contacts and never miss an important date
+            Suivez vos cadeaux, gérez vos contacts et ne manquez jamais une date
+            importante
           </p>
         </div>
       </section>
 
       {stats.giftsReceived === 0 && stats.giftsGiven === 0 && (
         <ContextualHelp
-          title="Add Your First Gift"
-          description="You haven't added any gifts yet. Start tracking gifts by clicking on these cards."
+          title="Ajoutez votre premier cadeau"
+          description="Vous n'avez pas encore ajouté de cadeaux. Commencez à suivre les cadeaux en cliquant sur ces cartes."
           helpKey="dashboard_empty_gifts"
           forceShow={true}
         />
@@ -333,7 +334,7 @@ const Dashboard = () => {
           <CardHeader className="pb-2">
             <div className="flex justify-between items-center">
               <CardTitle className="text-lg font-medium">
-                Gifts Received
+                Cadeaux reçus
               </CardTitle>
               <Gift className="h-5 w-5 text-primary" />
             </div>
@@ -341,14 +342,14 @@ const Dashboard = () => {
           <CardContent>
             <div className="text-3xl font-bold">{stats.giftsReceived}</div>
             <p className="text-sm text-muted-foreground">
-              Gifts you've received
+              Cadeaux que vous avez reçus
             </p>
             <Button
               variant="link"
               className="px-0 mt-2"
               onClick={handleViewAllGifts}
             >
-              View all
+              Voir tout
               <Eye className="h-4 w-4 ml-1" />
             </Button>
           </CardContent>
@@ -357,19 +358,23 @@ const Dashboard = () => {
         <Card className="hover:shadow-md transition-shadow duration-300">
           <CardHeader className="pb-2">
             <div className="flex justify-between items-center">
-              <CardTitle className="text-lg font-medium">Gifts Given</CardTitle>
+              <CardTitle className="text-lg font-medium">
+                Cadeaux offerts
+              </CardTitle>
               <Gift className="h-5 w-5 text-primary" />
             </div>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{stats.giftsGiven}</div>
-            <p className="text-sm text-muted-foreground">Gifts you've given</p>
+            <p className="text-sm text-muted-foreground">
+              Cadeaux que vous avez offerts
+            </p>
             <Button
               variant="link"
               className="px-0 mt-2"
               onClick={() => navigate("/gifts-given")}
             >
-              View all
+              Voir tout
               <Eye className="h-4 w-4 ml-1" />
             </Button>
           </CardContent>
@@ -384,13 +389,15 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{stats.contacts}</div>
-            <p className="text-sm text-muted-foreground">People you track</p>
+            <p className="text-sm text-muted-foreground">
+              Personnes que vous suivez
+            </p>
             <Button
               variant="link"
               className="px-0 mt-2"
               onClick={() => navigate("/contacts")}
             >
-              Manage contacts
+              Gérer les contacts
               <Eye className="h-4 w-4 ml-1" />
             </Button>
           </CardContent>
@@ -400,7 +407,7 @@ const Dashboard = () => {
           <CardHeader className="pb-2">
             <div className="flex justify-between items-center">
               <CardTitle className="text-lg font-medium">
-                Upcoming Events
+                Événements à venir
               </CardTitle>
               <Calendar className="h-5 w-5 text-primary" />
             </div>
@@ -408,14 +415,14 @@ const Dashboard = () => {
           <CardContent>
             <div className="text-3xl font-bold">{stats.upcomingEvents}</div>
             <p className="text-sm text-muted-foreground">
-              Events in your calendar
+              Événements dans votre calendrier
             </p>
             <Button
               variant="link"
               className="px-0 mt-2"
               onClick={handleAddEvent}
             >
-              Add event
+              Ajouter un événement
               <Plus className="h-4 w-4 ml-1" />
             </Button>
           </CardContent>
@@ -424,12 +431,12 @@ const Dashboard = () => {
 
       {stats.upcomingEvents === 0 && (
         <ContextualHelp
-          title="Add Important Dates"
-          description="Add birthdays, anniversaries, and other important dates to get reminders."
+          title="Ajouter des dates importantes"
+          description="Ajoutez des anniversaires, des célébrations et d'autres dates importantes pour recevoir des rappels."
           steps={[
-            "Click 'Add Event' to create a new reminder",
-            "Enter the event details and date",
-            "You'll see upcoming events here and get notified before they arrive",
+            "Cliquez sur 'Ajouter un événement' pour créer un nouveau rappel",
+            "Entrez les détails et la date de l'événement",
+            "Vous verrez les événements à venir ici et serez notifié avant leur arrivée",
           ]}
           helpKey="dashboard_empty_events"
           showDelay={2000}
@@ -440,13 +447,13 @@ const Dashboard = () => {
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
-              <CardTitle>Recent Gifts</CardTitle>
+              <CardTitle>Cadeaux récents</CardTitle>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => navigate("/gifts-received")}
               >
-                View all
+                Voir tout
               </Button>
             </div>
           </CardHeader>
@@ -461,7 +468,7 @@ const Dashboard = () => {
                     <div>
                       <p className="font-medium">{gift.name}</p>
                       <p className="text-sm text-muted-foreground">
-                        From: {gift.from}
+                        De: {gift.from}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(gift.date).toLocaleDateString()}
@@ -472,7 +479,9 @@ const Dashboard = () => {
                         gift.status === "Thank you sent" ? "outline" : "default"
                       }
                     >
-                      {gift.status}
+                      {gift.status === "Thank you sent"
+                        ? "Remercié"
+                        : "En attente"}
                     </Badge>
                   </li>
                 ))}
@@ -480,12 +489,14 @@ const Dashboard = () => {
             ) : (
               <div className="text-center p-6">
                 <Gift className="mx-auto h-10 w-10 text-muted-foreground/50 mb-3" />
-                <h3 className="text-lg font-medium mb-1">No gifts yet</h3>
+                <h3 className="text-lg font-medium mb-1">
+                  Pas encore de cadeaux
+                </h3>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Your received gifts will appear here
+                  Vos cadeaux reçus apparaîtront ici
                 </p>
                 <Button onClick={() => navigate("/gifts-received")}>
-                  Add a gift
+                  Ajouter un cadeau
                 </Button>
               </div>
             )}
@@ -495,9 +506,9 @@ const Dashboard = () => {
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
-              <CardTitle>Upcoming Events</CardTitle>
+              <CardTitle>Événements à venir</CardTitle>
               <Button variant="outline" size="sm" onClick={handleAddEvent}>
-                Add Event
+                Ajouter un événement
               </Button>
             </div>
           </CardHeader>
@@ -518,8 +529,8 @@ const Dashboard = () => {
                     <Badge
                       variant={event.daysLeft <= 7 ? "destructive" : "outline"}
                     >
-                      {event.daysLeft} {event.daysLeft === 1 ? "day" : "days"}{" "}
-                      left
+                      {event.daysLeft} {event.daysLeft === 1 ? "jour" : "jours"}{" "}
+                      restant
                     </Badge>
                   </li>
                 ))}
@@ -527,11 +538,13 @@ const Dashboard = () => {
             ) : (
               <div className="text-center p-6">
                 <Calendar className="mx-auto h-10 w-10 text-muted-foreground/50 mb-3" />
-                <h3 className="text-lg font-medium mb-1">No events yet</h3>
+                <h3 className="text-lg font-medium mb-1">
+                  Pas encore d'événements
+                </h3>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Track important dates and get reminders
+                  Suivez les dates importantes et recevez des rappels
                 </p>
-                <Button onClick={handleAddEvent}>Add an event</Button>
+                <Button onClick={handleAddEvent}>Ajouter un événement</Button>
               </div>
             )}
           </CardContent>
@@ -545,22 +558,22 @@ const Dashboard = () => {
           className="flex items-center gap-2"
         >
           <Bell className="h-4 w-4" />
-          Configure Notification Settings
+          Configurer les paramètres de notification
         </Button>
       </div>
 
       {isAddEventOpen && (
         <AddEventDialog
-          isOpen={isAddEventOpen}
-          onClose={() => setIsAddEventOpen(false)}
-          onAddEvent={handleEventAdded}
+          open={isAddEventOpen}
+          onOpenChange={(open) => setIsAddEventOpen(open)}
+          onEventAdded={handleEventAdded}
         />
       )}
 
       {isNotificationsOpen && (
         <NotificationsDialog
-          isOpen={isNotificationsOpen}
-          onClose={() => setIsNotificationsOpen(false)}
+          open={isNotificationsOpen}
+          onOpenChange={(open) => setIsNotificationsOpen(open)}
         />
       )}
     </div>

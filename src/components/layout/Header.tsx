@@ -27,8 +27,18 @@ export function Header() {
 
   const getInitials = () => {
     if (!user) return "GT";
+
     const username = user.username || "";
-    return username.substring(0, 2).toUpperCase();
+    if (!username) return "GT";
+
+    // If username appears to be an email, take first letter of the part before @
+    if (username.includes("@")) {
+      const firstPart = username.split("@")[0];
+      return firstPart.charAt(0).toUpperCase();
+    }
+
+    // Otherwise, take the first character of the username
+    return username.charAt(0).toUpperCase();
   };
 
   return (
@@ -50,7 +60,7 @@ export function Header() {
             {isAuthenticated ? (
               <>
                 <NavLink
-                  to="/"
+                  to="/dashboard"
                   className={({ isActive }) =>
                     `px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                       isActive
@@ -59,7 +69,7 @@ export function Header() {
                     }`
                   }
                 >
-                  Dashboard
+                  Tableau de bord
                 </NavLink>
                 <NavLink
                   to="/gifts-received"
@@ -71,7 +81,7 @@ export function Header() {
                     }`
                   }
                 >
-                  Gifts Received
+                  Cadeaux reçus
                 </NavLink>
                 <NavLink
                   to="/gifts-given"
@@ -83,7 +93,7 @@ export function Header() {
                     }`
                   }
                 >
-                  Gifts Given
+                  Cadeaux offerts
                 </NavLink>
                 <NavLink
                   to="/contacts"
@@ -111,7 +121,7 @@ export function Header() {
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={handleSignOut}>
                       <LogOut className="mr-2 h-4 w-4" />
-                      Sign out
+                      Se déconnecter
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -119,9 +129,9 @@ export function Header() {
             ) : (
               <>
                 <Button variant="ghost" onClick={() => navigate("/login")}>
-                  Sign In
+                  Connexion
                 </Button>
-                <Button onClick={() => navigate("/signup")}>Sign Up</Button>
+                <Button onClick={() => navigate("/signup")}>S'inscrire</Button>
               </>
             )}
           </nav>
@@ -147,7 +157,7 @@ export function Header() {
             {isAuthenticated ? (
               <>
                 <NavLink
-                  to="/"
+                  to="/dashboard"
                   className={({ isActive }) =>
                     `block px-3 py-2 rounded-md text-base font-medium ${
                       isActive
@@ -157,7 +167,7 @@ export function Header() {
                   }
                   onClick={() => setIsOpen(false)}
                 >
-                  Dashboard
+                  Tableau de bord
                 </NavLink>
                 <NavLink
                   to="/gifts-received"
@@ -170,7 +180,7 @@ export function Header() {
                   }
                   onClick={() => setIsOpen(false)}
                 >
-                  Gifts Received
+                  Cadeaux reçus
                 </NavLink>
                 <NavLink
                   to="/gifts-given"
@@ -183,7 +193,7 @@ export function Header() {
                   }
                   onClick={() => setIsOpen(false)}
                 >
-                  Gifts Given
+                  Cadeaux offerts
                 </NavLink>
                 <NavLink
                   to="/contacts"
@@ -207,7 +217,7 @@ export function Header() {
                   }}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  Sign out
+                  Se déconnecter
                 </Button>
               </>
             ) : (
@@ -220,7 +230,7 @@ export function Header() {
                     setIsOpen(false);
                   }}
                 >
-                  Sign In
+                  Connexion
                 </Button>
                 <Button
                   className="w-full justify-start"
@@ -229,7 +239,7 @@ export function Header() {
                     setIsOpen(false);
                   }}
                 >
-                  Sign Up
+                  S'inscrire
                 </Button>
               </>
             )}

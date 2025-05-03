@@ -1,6 +1,11 @@
-
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -19,20 +24,27 @@ interface SendThanksDialogProps {
   onSendThanks: (giftId: number) => void;
 }
 
-export const SendThanksDialog = ({ isOpen, onClose, gift, onSendThanks }: SendThanksDialogProps) => {
+export const SendThanksDialog = ({
+  isOpen,
+  onClose,
+  gift,
+  onSendThanks,
+}: SendThanksDialogProps) => {
   const [message, setMessage] = useState("");
-  const [subject, setSubject] = useState(`Thank you for the ${gift?.name}`);
+  const [subject, setSubject] = useState(
+    `Merci pour le cadeau "${gift?.name}"`
+  );
   const [isSending, setIsSending] = useState(false);
 
   const handleSend = () => {
     setIsSending(true);
-    
+
     // Simulate sending the thank you message
     setTimeout(() => {
       setIsSending(false);
       onSendThanks(gift.id);
-      toast.success("Thank you note sent successfully!", {
-        description: `Your message to ${gift.from} has been sent.`
+      toast.success("Note de remerciement envoyée avec succès !", {
+        description: `Votre message à ${gift.from} a été envoyé.`,
       });
       onClose();
     }, 1000);
@@ -44,45 +56,47 @@ export const SendThanksDialog = ({ isOpen, onClose, gift, onSendThanks }: SendTh
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Heart className="h-5 w-5 text-rose-500" />
-            Send Thank You Note
+            Envoyer une note de remerciement
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-4 py-3">
           <div className="space-y-2">
-            <Label htmlFor="recipient">To</Label>
+            <Label htmlFor="recipient">À</Label>
             <Input id="recipient" value={gift?.from || ""} disabled />
           </div>
-          
+
           <div className="space-y-2">
-            <Label htmlFor="subject">Subject</Label>
-            <Input 
-              id="subject" 
-              value={subject} 
+            <Label htmlFor="subject">Sujet</Label>
+            <Input
+              id="subject"
+              value={subject}
               onChange={(e) => setSubject(e.target.value)}
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="message">Message</Label>
             <Textarea
               id="message"
-              placeholder="Write your thank you message here..."
+              placeholder="Écrivez votre message de remerciement ici..."
               className="min-h-[120px]"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
             />
           </div>
         </div>
-        
+
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button 
-            onClick={handleSend} 
+          <Button variant="outline" onClick={onClose}>
+            Annuler
+          </Button>
+          <Button
+            onClick={handleSend}
             disabled={!message.trim() || isSending}
             className="gap-2"
           >
-            {isSending ? "Sending..." : "Send Thanks"}
+            {isSending ? "Envoi en cours..." : "Envoyer le remerciement"}
             <Send className="h-4 w-4" />
           </Button>
         </DialogFooter>

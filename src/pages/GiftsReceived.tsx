@@ -37,48 +37,7 @@ const GiftsReceived = () => {
   const [isThanksOpen, setIsThanksOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [gifts, setGifts] = useState<GiftItem[]>([
-    {
-      id: 1,
-      name: "Écouteurs sans fil",
-      from: "Mike Johnson",
-      date: "2025-03-15",
-      occasion: "Anniversaire",
-      thanked: true,
-      image:
-        "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=300&h=200&fit=crop",
-    },
-    {
-      id: 2,
-      name: "Ensemble de bougies parfumées",
-      from: "Lisa Smith",
-      date: "2025-03-25",
-      occasion: "Pendaison de crémaillère",
-      thanked: true,
-      image:
-        "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=300&h=200&fit=crop",
-    },
-    {
-      id: 3,
-      name: "Machine à café",
-      from: "John & Sarah",
-      date: "2025-04-10",
-      occasion: "Mariage",
-      thanked: false,
-      image:
-        "https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=300&h=200&fit=crop",
-    },
-    {
-      id: 4,
-      name: "Collection de livres",
-      from: "David Williams",
-      date: "2025-04-18",
-      occasion: "Juste comme ça",
-      thanked: false,
-      image:
-        "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=300&h=200&fit=crop",
-    },
-  ]);
+  const [gifts, setGifts] = useState<GiftItem[]>([]);
 
   // State for tracking first-time user or empty state
   const [isFirstTimeView, setIsFirstTimeView] = useState(true);
@@ -163,8 +122,8 @@ const GiftsReceived = () => {
     setGifts((prevGifts) => [...prevGifts, giftWithId]);
     setIsFirstTimeView(false);
 
-    toast.success("New gift added!", {
-      description: `${newGift.name} from ${newGift.from} has been added to your gifts.`,
+    toast.success("Nouveau cadeau ajouté !", {
+      description: `${newGift.name} de ${newGift.from} a été ajouté à vos cadeaux.`,
     });
   };
 
@@ -184,9 +143,9 @@ const GiftsReceived = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Gifts Received</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Cadeaux reçus</h1>
           <p className="text-muted-foreground mt-1">
-            Track and manage gifts you've received
+            Suivez et gérez les cadeaux que vous avez reçus
           </p>
         </div>
         <AddGiftDialog type="received" onGiftAdded={handleAddGift} />
@@ -194,13 +153,13 @@ const GiftsReceived = () => {
 
       {isFirstTimeView && (
         <ContextualHelp
-          title="Track Your Received Gifts"
-          description="Keep a record of all gifts you receive. Add details, photos, and track thank you notes."
+          title="Suivez vos cadeaux reçus"
+          description="Gardez une trace de tous les cadeaux que vous recevez. Ajoutez des détails, des photos, et suivez les notes de remerciement."
           steps={[
-            "Click 'Add Gift' to record a new gift you've received",
-            "Add details like who it's from, when you received it, and for what occasion",
-            "Upload a photo to remember what it looks like",
-            "Mark when you've sent a thank you note",
+            "Cliquez sur 'Ajouter un cadeau' pour enregistrer un nouveau cadeau reçu",
+            "Ajoutez des détails comme la personne qui vous l'a offert, quand vous l'avez reçu et pour quelle occasion",
+            "Téléchargez une photo pour vous rappeler à quoi il ressemble",
+            "Marquez quand vous avez envoyé une note de remerciement",
           ]}
           helpKey="gifts_received_first_time"
           forceShow={true}
@@ -211,7 +170,7 @@ const GiftsReceived = () => {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search gifts, people..."
+            placeholder="Rechercher des cadeaux, personnes..."
             className="pl-9"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -223,11 +182,11 @@ const GiftsReceived = () => {
       {filteredGifts.length === 0 ? (
         <div className="text-center py-10">
           <Gift className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium">No gifts found</h3>
+          <h3 className="text-lg font-medium">Aucun cadeau trouvé</h3>
           <p className="text-muted-foreground">
             {searchQuery
-              ? "Try adjusting your search or filters"
-              : "Click the 'Add Gift' button to add your first gift"}
+              ? "Essayez d'ajuster votre recherche ou vos filtres"
+              : "Cliquez sur le bouton 'Ajouter un cadeau' pour ajouter votre premier cadeau"}
           </p>
           {!searchQuery && (
             <Button
@@ -236,7 +195,7 @@ const GiftsReceived = () => {
               }
               className="mt-4"
             >
-              Add Your First Gift
+              Ajouter votre premier cadeau
             </Button>
           )}
         </div>

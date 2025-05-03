@@ -36,13 +36,13 @@ export default function ForgotPassword() {
     try {
       await forgotPassword(username);
       setSentCode(true);
-      setMessage("Verification code sent to your email");
+      setMessage("Code de vérification envoyé à votre email");
     } catch (err) {
-      console.error("Forgot password error:", err);
+      console.error("Erreur de mot de passe oublié:", err);
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to send verification code. Please try again."
+          : "Échec de l'envoi du code de vérification. Veuillez réessayer."
       );
     } finally {
       setIsLoading(false);
@@ -56,7 +56,7 @@ export default function ForgotPassword() {
 
     // Validate password match
     if (newPassword !== confirmPassword) {
-      setError("Passwords don't match");
+      setError("Les mots de passe ne correspondent pas");
       return;
     }
 
@@ -67,15 +67,15 @@ export default function ForgotPassword() {
       navigate("/login", {
         state: {
           message:
-            "Password reset successfully. Please sign in with your new password.",
+            "Mot de passe réinitialisé avec succès. Veuillez vous connecter avec votre nouveau mot de passe.",
         },
       });
     } catch (err) {
-      console.error("Reset password error:", err);
+      console.error("Erreur de réinitialisation du mot de passe:", err);
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to reset password. Please check your code and try again."
+          : "Échec de la réinitialisation du mot de passe. Veuillez vérifier votre code et réessayer."
       );
     } finally {
       setIsLoading(false);
@@ -86,9 +86,11 @@ export default function ForgotPassword() {
     <div className="flex min-h-[80vh] flex-col items-center justify-center px-4">
       <div className="mb-8 flex flex-col items-center text-center">
         <Gift className="h-12 w-12 text-primary mb-2" />
-        <h1 className="text-3xl font-bold tracking-tight">Reset password</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Réinitialiser le mot de passe
+        </h1>
         <p className="text-muted-foreground mt-2">
-          We'll help you recover your account
+          Nous vous aiderons à récupérer votre compte
         </p>
       </div>
 
@@ -96,9 +98,10 @@ export default function ForgotPassword() {
         {!sentCode ? (
           <>
             <CardHeader>
-              <CardTitle>Forgot Password</CardTitle>
+              <CardTitle>Mot de passe oublié</CardTitle>
               <CardDescription>
-                Enter your email to receive a verification code
+                Entrez votre identifiant de connexion pour recevoir un code de
+                vérification
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleSendCode}>
@@ -114,10 +117,10 @@ export default function ForgotPassword() {
                   </Alert>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="username">Email</Label>
+                  <Label htmlFor="username">Identifiant de connexion</Label>
                   <Input
                     id="username"
-                    type="email"
+                    placeholder="Votre identifiant"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
@@ -126,17 +129,19 @@ export default function ForgotPassword() {
               </CardContent>
               <CardFooter className="flex flex-col space-y-4">
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Sending code..." : "Send reset code"}
+                  {isLoading
+                    ? "Envoi du code..."
+                    : "Envoyer le code de réinitialisation"}
                 </Button>
                 <p className="text-center text-sm text-muted-foreground">
-                  Remember your password?{" "}
+                  Vous vous souvenez de votre mot de passe?{" "}
                   <Button
                     variant="link"
                     className="p-0 h-auto"
                     type="button"
                     onClick={() => navigate("/login")}
                   >
-                    Sign in
+                    Se connecter
                   </Button>
                 </p>
               </CardFooter>
@@ -145,9 +150,9 @@ export default function ForgotPassword() {
         ) : (
           <>
             <CardHeader>
-              <CardTitle>Reset your password</CardTitle>
+              <CardTitle>Réinitialisez votre mot de passe</CardTitle>
               <CardDescription>
-                Enter the verification code and your new password
+                Entrez le code de vérification et votre nouveau mot de passe
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleResetPassword}>
@@ -163,7 +168,7 @@ export default function ForgotPassword() {
                   </Alert>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="code">Verification Code</Label>
+                  <Label htmlFor="code">Code de vérification</Label>
                   <Input
                     id="code"
                     value={code}
@@ -172,20 +177,28 @@ export default function ForgotPassword() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="newPassword">New Password</Label>
+                  <Label htmlFor="newPassword">Nouveau mot de passe</Label>
                   <Input
                     id="newPassword"
                     type="password"
+                    placeholder="••••••••"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Minimum 8 caractères, incluant au moins une lettre
+                    majuscule, une lettre minuscule et un chiffre
+                  </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                  <Label htmlFor="confirmPassword">
+                    Confirmer le nouveau mot de passe
+                  </Label>
                   <Input
                     id="confirmPassword"
                     type="password"
+                    placeholder="••••••••"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
@@ -194,7 +207,9 @@ export default function ForgotPassword() {
               </CardContent>
               <CardFooter className="flex flex-col space-y-4">
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Resetting password..." : "Reset password"}
+                  {isLoading
+                    ? "Réinitialisation en cours..."
+                    : "Réinitialiser le mot de passe"}
                 </Button>
               </CardFooter>
             </form>

@@ -33,7 +33,7 @@ export default function Signup() {
 
     // Validate password match
     if (password !== confirmPassword) {
-      setError("Passwords don't match");
+      setError("Les mots de passe ne correspondent pas");
       return;
     }
 
@@ -43,11 +43,11 @@ export default function Signup() {
       await signUp(username, password, email);
       setShowConfirmation(true);
     } catch (err) {
-      console.error("Signup error:", err);
+      console.error("Erreur d'inscription:", err);
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to sign up. Please try again."
+          : "Échec de l'inscription. Veuillez réessayer."
       );
     } finally {
       setIsLoading(false);
@@ -62,14 +62,14 @@ export default function Signup() {
     try {
       await confirmSignUp(username, confirmationCode);
       navigate("/login", {
-        state: { message: "Account created successfully! Please sign in." },
+        state: { message: "Compte créé avec succès! Veuillez vous connecter." },
       });
     } catch (err) {
-      console.error("Confirmation error:", err);
+      console.error("Erreur de confirmation:", err);
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to confirm account. Please check your code and try again."
+          : "Échec de la confirmation du compte. Veuillez vérifier votre code et réessayer."
       );
     } finally {
       setIsLoading(false);
@@ -80,9 +80,9 @@ export default function Signup() {
     <div className="flex min-h-[80vh] flex-col items-center justify-center px-4">
       <div className="mb-8 flex flex-col items-center text-center">
         <Gift className="h-12 w-12 text-primary mb-2" />
-        <h1 className="text-3xl font-bold tracking-tight">Create an account</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Créer un compte</h1>
         <p className="text-muted-foreground mt-2">
-          Sign up to start tracking your gifts
+          Inscrivez-vous pour commencer à suivre vos cadeaux
         </p>
       </div>
 
@@ -90,9 +90,9 @@ export default function Signup() {
         {!showConfirmation ? (
           <>
             <CardHeader>
-              <CardTitle>Sign Up</CardTitle>
+              <CardTitle>Inscription</CardTitle>
               <CardDescription>
-                Enter your details to create a new account
+                Entrez vos informations pour créer un nouveau compte
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleSubmit}>
@@ -103,39 +103,49 @@ export default function Signup() {
                   </Alert>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
+                  <Label htmlFor="username">Identifiant de connexion</Label>
                   <Input
                     id="username"
+                    placeholder="Choisissez un identifiant pour vous connecter"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Cet identifiant sera utilisé pour vous connecter à l'application
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
                     type="email"
+                    placeholder="votre.email@exemple.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">Mot de passe</Label>
                   <Input
                     id="password"
                     type="password"
+                    placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Minimum 8 caractères, incluant au moins une lettre majuscule, une lettre minuscule et un chiffre
+                  </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
                   <Input
                     id="confirmPassword"
                     type="password"
+                    placeholder="••••••••"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
@@ -144,17 +154,17 @@ export default function Signup() {
               </CardContent>
               <CardFooter className="flex flex-col space-y-4">
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Creating account..." : "Create account"}
+                  {isLoading ? "Création du compte..." : "Créer un compte"}
                 </Button>
                 <p className="text-center text-sm text-muted-foreground">
-                  Already have an account?{" "}
+                  Vous avez déjà un compte?{" "}
                   <Button
                     variant="link"
                     className="p-0 h-auto"
                     type="button"
                     onClick={() => navigate("/login")}
                   >
-                    Sign in
+                    Se connecter
                   </Button>
                 </p>
               </CardFooter>
@@ -163,10 +173,9 @@ export default function Signup() {
         ) : (
           <>
             <CardHeader>
-              <CardTitle>Verify your account</CardTitle>
+              <CardTitle>Vérifiez votre compte</CardTitle>
               <CardDescription>
-                We've sent a verification code to your email. Please enter it
-                below.
+                Nous avons envoyé un code de vérification à votre email. Veuillez le saisir ci-dessous.
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleConfirmation}>
@@ -177,7 +186,7 @@ export default function Signup() {
                   </Alert>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="code">Verification Code</Label>
+                  <Label htmlFor="code">Code de vérification</Label>
                   <Input
                     id="code"
                     value={confirmationCode}
@@ -188,7 +197,7 @@ export default function Signup() {
               </CardContent>
               <CardFooter className="flex flex-col space-y-4">
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Verifying..." : "Verify account"}
+                  {isLoading ? "Vérification..." : "Vérifier le compte"}
                 </Button>
               </CardFooter>
             </form>
