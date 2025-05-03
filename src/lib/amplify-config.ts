@@ -17,6 +17,7 @@ Amplify.configure({
       userPoolId: config.userPoolId,
       userPoolClientId: config.userPoolWebClientId,
       region: config.region,
+      authenticationFlowType: "USER_PASSWORD_AUTH",
     },
   },
   API: {

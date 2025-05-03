@@ -5,8 +5,20 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-import { fetchAuthSession, fetchUserAttributes, getCurrentUser } from 'aws-amplify/auth';
-import { AuthSignInOutput, signIn, signOut, signUp, confirmSignUp, resetPassword, confirmResetPassword } from 'aws-amplify/auth';
+import {
+  fetchAuthSession,
+  fetchUserAttributes,
+  getCurrentUser,
+} from "aws-amplify/auth";
+import {
+  AuthSignInOutput,
+  signIn,
+  signOut,
+  signUp,
+  confirmSignUp,
+  resetPassword,
+  confirmResetPassword,
+} from "aws-amplify/auth";
 
 interface AuthContextType {
   user: any | null;
@@ -74,7 +86,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Get user attributes
       const attributes = await fetchUserAttributes();
 
-      console.log("User authenticated successfully", { currentUser, attributes });
+      console.log("User authenticated successfully", {
+        currentUser,
+        attributes,
+      });
       setUser({ ...currentUser, attributes });
     } catch (error) {
       console.log("No authenticated user found", error);
@@ -94,21 +109,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log(`Attempting to sign in user: ${username}`);
       setIsLoading(true);
 
-      const { isSignedIn, nextStep } = await signIn({ username, password });
+      const result = await signIn({
+        username,
+        password,
+        options: {
+          authFlowType: "USER_PASSWORD_AUTH",
+        },
+      });
 
-      if (isSignedIn) {
+      console.log("Sign in result:", result);
+
+      if (result.isSignedIn) {
         console.log("Sign in successful");
         await checkAuth(); // Refresh user data
-      } else {
-        console.log("Additional steps required:", nextStep);
+      } else if (result.nextStep) {
+        console.log("Additional steps required:", result.nextStep);
         // Handle additional steps if needed (MFA, etc.)
-        switch (nextStep.signInStep) {
-          case 'CONFIRM_SIGN_UP':
-            throw new Error("User is not confirmed. Please check your email for verification code.");
-          case 'RESET_PASSWORD':
-            throw new Error("Password reset required. Please reset your password.");
+        switch (result.nextStep.signInStep) {
+          case "CONFIRM_SIGN_UP":
+            throw new Error(
+              "User is not confirmed. Please check your email for verification code."
+            );
+          case "RESET_PASSWORD":
+            throw new Error(
+              "Password reset required. Please reset your password."
+            );
           default:
-            throw new Error(`Additional step required: ${nextStep.signInStep}`);
+            throw new Error(
+              `Additional step required: ${result.nextStep.signInStep}`
+            );
         }
       }
     } catch (error: any) {
@@ -139,7 +168,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signUpUser = async (username: string, password: string, email: string) => {
+  const signUpUser = async (
+    username: string,
+    password: string,
+    email: string
+  ) => {
     try {
       clearAuthError();
       console.log(`Attempting to sign up user: ${username}`);
@@ -151,6 +184,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           userAttributes: {
             email,
           },
+          authFlowType: "USER_PASSWORD_AUTH",
         },
       });
 
@@ -176,12 +210,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearAuthError();
       console.log(`Confirming sign up for user: ${username}`);
       setIsLoading(true);
-      const { isSignUpComplete } = await confirmSignUp({ username, confirmationCode: code });
+      const { isSignUpComplete } = await confirmSignUp({
+        username,
+        confirmationCode: code,
+      });
 
       if (isSignUpComplete) {
         console.log("Confirm sign up successful");
       } else {
-        throw new Error("Sign up confirmation not complete. Additional steps may be required.");
+        throw new Error(
+          "Sign up confirmation not complete. Additional steps may be required."
+        );
       }
     } catch (error: any) {
       console.error("Confirm sign up error:", error);
@@ -223,13 +262,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { isPasswordReset } = await confirmResetPassword({
         username,
         confirmationCode: code,
-        newPassword
+        newPassword,
       });
 
       if (isPasswordReset) {
         console.log("Password reset successful");
       } else {
-        throw new Error("Password reset not complete. Additional steps may be required.");
+        throw new Error(
+          "Password reset not complete. Additional steps may be required."
+        );
       }
     } catch (error: any) {
       console.error("Forgot password submit error:", error);
