@@ -8,6 +8,8 @@ import { AddEventDialog } from "@/components/events/AddEventDialog";
 import { NotificationsDialog } from "@/components/notifications/NotificationsDialog";
 import { EmptyState } from "@/components/empty-states/EmptyState";
 import { useAuth } from "@/lib/auth-context";
+import { ContextualHelp } from "@/components/helpers/ContextualHelp";
+import { FeatureDisclosure } from "@/components/helpers/FeatureDisclosure";
 
 // Define interfaces for our data types
 interface DashboardStats {
@@ -252,6 +254,19 @@ const Dashboard = () => {
           </div>
         </section>
 
+        <ContextualHelp
+          title="Getting Started"
+          description="Welcome to Gift Tracker! Here's how to get started:"
+          steps={[
+            "Add gifts you've received to keep track of them",
+            "Create your contact list with friends and family",
+            "Set up event reminders for important dates",
+            "Explore all the features to manage your gift-giving experience",
+          ]}
+          helpKey="dashboard_new_user"
+          forceShow={true}
+        />
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <EmptyState
             title="Track your gifts"
@@ -291,6 +306,8 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-8">
+      <FeatureDisclosure />
+
       <section className="text-center py-10">
         <div className="max-w-3xl mx-auto space-y-6">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
@@ -301,6 +318,15 @@ const Dashboard = () => {
           </p>
         </div>
       </section>
+
+      {stats.giftsReceived === 0 && stats.giftsGiven === 0 && (
+        <ContextualHelp
+          title="Add Your First Gift"
+          description="You haven't added any gifts yet. Start tracking gifts by clicking on these cards."
+          helpKey="dashboard_empty_gifts"
+          forceShow={true}
+        />
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="hover:shadow-md transition-shadow duration-300">
@@ -395,6 +421,20 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {stats.upcomingEvents === 0 && (
+        <ContextualHelp
+          title="Add Important Dates"
+          description="Add birthdays, anniversaries, and other important dates to get reminders."
+          steps={[
+            "Click 'Add Event' to create a new reminder",
+            "Enter the event details and date",
+            "You'll see upcoming events here and get notified before they arrive",
+          ]}
+          helpKey="dashboard_empty_events"
+          showDelay={2000}
+        />
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>

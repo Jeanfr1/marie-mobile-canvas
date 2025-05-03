@@ -1,15 +1,22 @@
-
 import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Upload, Image } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
-import { GiftItem } from "@/pages/GiftsReceived"; 
+import { GiftItem } from "@/pages/GiftsReceived";
 
 interface AddGiftDialogProps {
-  type: 'received' | 'given';
+  type: "received" | "given";
   onGiftAdded?: (gift: GiftItem) => void;
 }
 
@@ -39,7 +46,9 @@ export const AddGiftDialog = ({ type, onGiftAdded }: AddGiftDialogProps) => {
 
     // Check file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("L'image est trop volumineuse", { description: "Veuillez sélectionner une image de moins de 5 Mo" });
+      toast.error("Image is too large", {
+        description: "Please select an image smaller than 5MB",
+      });
       return;
     }
 
@@ -55,17 +64,17 @@ export const AddGiftDialog = ({ type, onGiftAdded }: AddGiftDialogProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Basic validation
     if (!giftName.trim() || !person.trim() || !date || !occasion.trim()) {
-      toast.error("Veuillez remplir tous les champs obligatoires");
+      toast.error("Please fill in all required fields");
       return;
     }
-    
+
     const newGift: GiftItem = {
       id: Date.now(), // Use timestamp as a simple unique ID
       name: giftName,
-      from: type === 'received' ? person : 'Moi',
+      from: type === "received" ? person : "Me",
       date: date,
       occasion: occasion,
       thanked: false,
@@ -73,17 +82,19 @@ export const AddGiftDialog = ({ type, onGiftAdded }: AddGiftDialogProps) => {
     };
 
     // For given gifts, add the recipient as 'to' and include cost if provided
-    if (type === 'given') {
+    if (type === "given") {
       (newGift as any).to = person;
       newGift.cost = cost ? parseFloat(cost) : undefined;
     }
-    
+
     // Pass the new gift to parent component
     if (onGiftAdded) {
       onGiftAdded(newGift);
     }
-    
-    toast.success(`Cadeau ${type === 'received' ? 'reçu' : 'offert'} ajouté avec succès !`);
+
+    toast.success(
+      `${type === "received" ? "Received" : "Given"} gift added successfully!`
+    );
     resetForm();
     setIsOpen(false);
   };
@@ -91,34 +102,36 @@ export const AddGiftDialog = ({ type, onGiftAdded }: AddGiftDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="flex items-center gap-2">
+        <Button className="flex items-center gap-2" id="add-gift-button">
           <Plus size={16} />
-          Ajouter un nouveau cadeau
+          Add New Gift
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Ajouter un nouveau cadeau {type === 'received' ? 'reçu' : 'offert'}</DialogTitle>
+          <DialogTitle>
+            Add New {type === "received" ? "Received" : "Given"} Gift
+          </DialogTitle>
           <DialogDescription>
-            Entrez les détails du cadeau que vous avez {type === 'received' ? 'reçu' : 'offert'}.
+            Enter the details of the gift you {type === "received" ? "received" : "gave"}.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="gift-name">Nom du cadeau</Label>
-            <Input 
-              id="gift-name" 
-              placeholder="Entrez le nom du cadeau"
+            <Label htmlFor="gift-name">Gift Name</Label>
+            <Input
+              id="gift-name"
+              placeholder="Enter gift name"
               value={giftName}
               onChange={(e) => setGiftName(e.target.value)}
               required
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="person">{type === 'received' ? 'De' : 'À'}</Label>
-            <Input 
-              id="person" 
-              placeholder={`Entrez le nom ${type === 'received' ? 'du donateur' : 'du destinataire'}`}
+            <Label htmlFor="person">{type === "received" ? "From" : "To"}</Label>
+            <Input
+              id="person"
+              placeholder={`Enter ${type === "received" ? "giver's" : "recipient's"} name`}
               value={person}
               onChange={(e) => setPerson(e.target.value)}
               required
@@ -126,9 +139,9 @@ export const AddGiftDialog = ({ type, onGiftAdded }: AddGiftDialogProps) => {
           </div>
           <div className="space-y-2">
             <Label htmlFor="occasion">Occasion</Label>
-            <Input 
-              id="occasion" 
-              placeholder="Entrez l'occasion"
+            <Input
+              id="occasion"
+              placeholder="Enter the occasion"
               value={occasion}
               onChange={(e) => setOccasion(e.target.value)}
               required
@@ -136,60 +149,60 @@ export const AddGiftDialog = ({ type, onGiftAdded }: AddGiftDialogProps) => {
           </div>
           <div className="space-y-2">
             <Label htmlFor="date">Date</Label>
-            <Input 
-              id="date" 
+            <Input
+              id="date"
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
             />
           </div>
-          {type === 'given' && (
+          {type === "given" && (
             <div className="space-y-2">
-              <Label htmlFor="cost">Coût</Label>
-              <Input 
-                id="cost" 
-                type="number" 
-                placeholder="Entrez le coût"
+              <Label htmlFor="cost">Cost</Label>
+              <Input
+                id="cost"
+                type="number"
+                placeholder="Enter cost"
                 value={cost}
                 onChange={(e) => setCost(e.target.value)}
               />
             </div>
           )}
           <div className="space-y-2">
-            <Label htmlFor="image">Image du cadeau</Label>
+            <Label htmlFor="image">Gift Image</Label>
             <div className="flex flex-col space-y-2">
               {imagePreview ? (
                 <div className="relative w-full h-40 rounded overflow-hidden">
-                  <img 
-                    src={imagePreview} 
-                    alt="Aperçu du cadeau" 
-                    className="w-full h-full object-cover" 
+                  <img
+                    src={imagePreview}
+                    alt="Gift preview"
+                    className="w-full h-full object-cover"
                   />
-                  <Button 
+                  <Button
                     type="button"
-                    variant="outline" 
-                    size="sm" 
+                    variant="outline"
+                    size="sm"
                     className="absolute top-2 right-2"
                     onClick={() => {
                       setImageFile(null);
                       setImagePreview(null);
                     }}
                   >
-                    Supprimer
+                    Remove
                   </Button>
                 </div>
               ) : (
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center space-y-2">
                   <Image className="h-8 w-8 text-muted-foreground" />
                   <div className="text-center">
-                    <p className="text-sm text-muted-foreground">Téléchargez une image de votre cadeau</p>
-                    <p className="text-xs text-muted-foreground">PNG, JPG jusqu'à 5 Mo</p>
+                    <p className="text-sm text-muted-foreground">Upload an image of your gift</p>
+                    <p className="text-xs text-muted-foreground">PNG, JPG up to 5MB</p>
                   </div>
                   <label htmlFor="image-upload" className="cursor-pointer">
                     <div className="flex items-center space-x-2 bg-primary text-primary-foreground hover:bg-primary/90 h-9 rounded-md px-3 text-sm transition-colors">
                       <Upload size={14} />
-                      <span>Choisir un fichier</span>
+                      <span>Choose file</span>
                     </div>
                     <Input
                       id="image-upload"
@@ -204,7 +217,10 @@ export const AddGiftDialog = ({ type, onGiftAdded }: AddGiftDialogProps) => {
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit">Enregistrer le cadeau</Button>
+            <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit">Save Gift</Button>
           </DialogFooter>
         </form>
       </DialogContent>
