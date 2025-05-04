@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,227 +18,246 @@ import { GiftItem } from "@/pages/GiftsReceived";
 interface AddGiftDialogProps {
   type: "received" | "given";
   onGiftAdded?: (gift: GiftItem) => void;
+  suggestedRecipient?: string | null;
 }
 
-export const AddGiftDialog = ({ type, onGiftAdded }: AddGiftDialogProps) => {
+export const AddGiftDialog = ({
+  type,
+  onGiftAdded,
+  suggestedRecipient,
+}: AddGiftDialogProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [giftName, setGiftName] = useState("");
-  const [person, setPerson] = useState("");
-  const [occasion, setOccasion] = useState("");
-  const [date, setDate] = useState("");
-  const [cost, setCost] = useState<string>("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [giftFrom, setGiftFrom] = useState("");
+  const [giftTo, setGiftTo] = useState("");
+  const [giftDate, setGiftDate] = useState("");
+  const [giftOccasion, setGiftOccasion] = useState("");
+  const [giftCost, setGiftCost] = useState("");
+  const [giftImage, setGiftImage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Set the suggested recipient if provided
+  useEffect(() => {
+    if (suggestedRecipient && type === "given") {
+      setGiftTo(suggestedRecipient);
+
+      // If suggested recipient is provided, automatically open the dialog
+      if (suggestedRecipient && !isOpen) {
+        setIsOpen(true);
+        setGiftOccasion("Anniversaire"); // Set occasion to birthday
+      }
+    }
+  }, [suggestedRecipient, type, isOpen]);
 
   const resetForm = () => {
     setGiftName("");
-    setPerson("");
-    setOccasion("");
-    setDate("");
-    setCost("");
-    setImageFile(null);
-    setImagePreview(null);
+    setGiftFrom("");
+    setGiftTo("");
+    setGiftDate("");
+    setGiftOccasion("");
+    setGiftCost("");
+    setGiftImage(null);
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image trop volumineuse", {
-        description: "Veuillez sélectionner une image de moins de 5MB",
-      });
-      return;
+  const handleDialogChange = (open: boolean) => {
+    if (!open) {
+      resetForm();
     }
-
-    setImageFile(file);
-
-    // Create preview URL
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setImagePreview(event.target?.result as string);
-    };
-    reader.readAsDataURL(file);
+    setIsOpen(open);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     // Basic validation
-    if (!giftName.trim() || !person.trim() || !date || !occasion.trim()) {
-      toast.error("Veuillez remplir tous les champs obligatoires");
+    if (!giftName.trim()) {
+      toast.error("Veuillez saisir le nom du cadeau");
       return;
     }
 
+    if (type === "received" && !giftFrom.trim()) {
+      toast.error("Veuillez saisir qui vous a offert ce cadeau");
+      return;
+    }
+
+    if (type === "given" && !giftTo.trim()) {
+      toast.error("Veuillez saisir à qui vous avez offert ce cadeau");
+      return;
+    }
+
+    if (!giftDate) {
+      toast.error("Veuillez saisir la date");
+      return;
+    }
+
+    setIsSubmitting(true);
+
     try {
-      const newGift: GiftItem = {
-        id: Date.now(), // Use timestamp as a simple unique ID
+      // Create gift object based on type
+      const giftData: any = {
         name: giftName,
-        from: type === "received" ? person : "Moi",
-        date: date,
-        occasion: occasion,
-        thanked: false,
-        image: imagePreview, // Use the image preview data URL
+        date: giftDate,
+        occasion: giftOccasion,
+        image: giftImage,
       };
 
-      // For given gifts, add the recipient as 'to' and include cost if provided
-      if (type === "given") {
-        (newGift as any).to = person;
-        newGift.cost = cost ? parseFloat(cost) : undefined;
+      if (type === "received") {
+        giftData.from = giftFrom;
+        giftData.thanked = false;
+      } else {
+        giftData.to = giftTo;
+        giftData.cost = giftCost ? parseFloat(giftCost) : 0;
       }
 
-      // Pass the new gift to parent component
+      // Call the callback function to add the gift
       if (onGiftAdded) {
-        onGiftAdded(newGift);
+        onGiftAdded(giftData);
       }
 
-      toast.success(
-        `Cadeau ${type === "received" ? "reçu" : "donné"} ajouté avec succès !`
-      );
       resetForm();
       setIsOpen(false);
     } catch (error) {
       console.error("Error adding gift:", error);
       toast.error("Une erreur s'est produite lors de l'ajout du cadeau");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setGiftImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleDialogChange}>
       <DialogTrigger asChild>
-        <Button className="flex items-center gap-2" id="add-gift-button">
+        <Button id="add-gift-button" className="flex items-center gap-2">
           <Plus size={16} />
-          Ajouter un cadeau
+          {type === "received"
+            ? "Ajouter un cadeau reçu"
+            : "Ajouter un cadeau offert"}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
-            Ajouter un cadeau {type === "received" ? "reçu" : "offert"}
+            {type === "received"
+              ? "Ajouter un cadeau reçu"
+              : "Ajouter un cadeau offert"}
           </DialogTitle>
           <DialogDescription>
-            Entrez les détails du cadeau que vous avez{" "}
-            {type === "received" ? "reçu" : "offert"}.
+            {type === "received"
+              ? "Enregistrez les détails d'un cadeau que vous avez reçu"
+              : "Enregistrez les détails d'un cadeau que vous avez offert à quelqu'un"}
           </DialogDescription>
         </DialogHeader>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="gift-name">Nom du cadeau</Label>
             <Input
               id="gift-name"
-              placeholder="Entrez le nom du cadeau"
+              placeholder="Ex: Montre, Livre, etc."
               value={giftName}
               onChange={(e) => setGiftName(e.target.value)}
-              required
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="person">
-              {type === "received" ? "De" : "Pour"}
-            </Label>
-            <Input
-              id="person"
-              placeholder={`Entrez le nom ${
-                type === "received" ? "du donateur" : "du destinataire"
-              }`}
-              value={person}
-              onChange={(e) => setPerson(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="occasion">Occasion</Label>
-            <Input
-              id="occasion"
-              placeholder="Entrez l'occasion"
-              value={occasion}
-              onChange={(e) => setOccasion(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="date">Date</Label>
-            <Input
-              id="date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
-          </div>
-          {type === "given" && (
+
+          {type === "received" ? (
             <div className="space-y-2">
-              <Label htmlFor="cost">Prix</Label>
+              <Label htmlFor="gift-from">De la part de</Label>
               <Input
-                id="cost"
-                type="number"
-                placeholder="Entrez le prix"
-                value={cost}
-                onChange={(e) => setCost(e.target.value)}
+                id="gift-from"
+                placeholder="Qui vous a offert ce cadeau?"
+                value={giftFrom}
+                onChange={(e) => setGiftFrom(e.target.value)}
+              />
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="gift-to">Destinataire</Label>
+              <Input
+                id="gift-to"
+                placeholder="À qui avez-vous offert ce cadeau?"
+                value={giftTo}
+                onChange={(e) => setGiftTo(e.target.value)}
               />
             </div>
           )}
+
           <div className="space-y-2">
-            <Label htmlFor="image">Image du cadeau</Label>
-            <div className="flex flex-col space-y-2">
-              {imagePreview ? (
-                <div className="relative w-full h-40 rounded overflow-hidden">
+            <Label htmlFor="gift-date">Date</Label>
+            <Input
+              id="gift-date"
+              type="date"
+              value={giftDate}
+              onChange={(e) => setGiftDate(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="gift-occasion">Occasion</Label>
+            <Input
+              id="gift-occasion"
+              placeholder="Ex: Anniversaire, Noël, etc."
+              value={giftOccasion}
+              onChange={(e) => setGiftOccasion(e.target.value)}
+            />
+          </div>
+
+          {type === "given" && (
+            <div className="space-y-2">
+              <Label htmlFor="gift-cost">Coût (€)</Label>
+              <Input
+                id="gift-cost"
+                type="number"
+                placeholder="Optionnel"
+                value={giftCost}
+                onChange={(e) => setGiftCost(e.target.value)}
+              />
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="gift-image">Image (optionnel)</Label>
+            <div className="flex items-center gap-3">
+              <Label
+                htmlFor="gift-image-upload"
+                className="flex h-10 items-center justify-center rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background hover:bg-accent hover:text-accent-foreground cursor-pointer"
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                <span>Télécharger</span>
+                <input
+                  id="gift-image-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                />
+              </Label>
+              {giftImage && (
+                <div className="relative w-12 h-12 bg-muted rounded-md overflow-hidden">
                   <img
-                    src={imagePreview}
-                    alt="Aperçu du cadeau"
+                    src={giftImage}
+                    alt="Gift preview"
                     className="w-full h-full object-cover"
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="absolute top-2 right-2"
-                    onClick={() => {
-                      setImageFile(null);
-                      setImagePreview(null);
-                    }}
-                  >
-                    Supprimer
-                  </Button>
-                </div>
-              ) : (
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center space-y-2">
-                  <Image className="h-8 w-8 text-muted-foreground" />
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground">
-                      Téléchargez une image de votre cadeau
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      PNG, JPG jusqu'à 5MB
-                    </p>
-                  </div>
-                  <label htmlFor="image-upload" className="cursor-pointer">
-                    <div className="flex items-center space-x-2 bg-primary text-primary-foreground hover:bg-primary/90 h-9 rounded-md px-3 text-sm transition-colors">
-                      <Upload size={14} />
-                      <span>Choisir un fichier</span>
-                    </div>
-                    <Input
-                      id="image-upload"
-                      type="file"
-                      accept="image/*"
-                      className="sr-only"
-                      onChange={handleImageChange}
-                    />
-                  </label>
                 </div>
               )}
             </div>
           </div>
+
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-            >
-              Annuler
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Ajout en cours..." : "Ajouter le cadeau"}
             </Button>
-            <Button type="submit">Enregistrer</Button>
           </DialogFooter>
         </form>
       </DialogContent>

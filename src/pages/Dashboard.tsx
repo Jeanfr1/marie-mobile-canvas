@@ -1,5 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Gift, Users, Calendar, Bell, Eye, Plus, Sparkles } from "lucide-react";
+import {
+  Gift,
+  Users,
+  Calendar,
+  Bell,
+  Eye,
+  Plus,
+  Sparkles,
+  Cake,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
@@ -10,6 +19,8 @@ import { EmptyState } from "@/components/empty-states/EmptyState";
 import { useAuth } from "@/lib/auth-context";
 import { ContextualHelp } from "@/components/helpers/ContextualHelp";
 import { FeatureDisclosure } from "@/components/helpers/FeatureDisclosure";
+import { BirthdayGiftPrompt } from "@/components/gifts/BirthdayGiftPrompt";
+import { differenceInDays, addYears, parseISO } from "date-fns";
 
 // Define interfaces for our data types
 interface DashboardStats {
@@ -34,11 +45,25 @@ interface Event {
   daysLeft: number;
 }
 
+interface Contact {
+  id: number;
+  name: string;
+  relationship: string;
+  giftsReceived: number;
+  giftsGiven: number;
+  upcoming: string | null;
+  interests: string[];
+  birthday?: string;
+}
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isBirthdayPromptOpen, setIsBirthdayPromptOpen] = useState(false);
+  const [contactWithBirthday, setContactWithBirthday] =
+    useState<Contact | null>(null);
 
   // State for tracking dashboard statistics
   const [stats, setStats] = useState<DashboardStats>({
@@ -174,6 +199,99 @@ const Dashboard = () => {
     };
   }, [user]);
 
+  // Add a new useEffect to check for upcoming birthdays
+  useEffect(() => {
+    if (!user) return;
+
+    const checkForUpcomingBirthdays = () => {
+      const userId = user.username;
+      const userDataKey = `userData_${userId}`;
+      const userData = JSON.parse(localStorage.getItem(userDataKey) || "{}");
+      const contacts = userData.contacts || [];
+
+      // Get contacts with birthdays
+      const contactsWithBirthdays = contacts.filter(
+        (contact: Contact) => contact.birthday
+      );
+
+      if (contactsWithBirthdays.length === 0) return;
+
+      const today = new Date();
+
+      // Find contacts with birthdays in the next 14 days
+      const upcomingBirthdays = contactsWithBirthdays
+        .map((contact: Contact) => {
+          const birthDate = parseISO(contact.birthday);
+
+          // Get this year's birthday
+          const thisYearBirthday = new Date(
+            today.getFullYear(),
+            birthDate.getMonth(),
+            birthDate.getDate()
+          );
+
+          // If birthday has passed this year, calculate for next year
+          const targetBirthday =
+            thisYearBirthday < today
+              ? addYears(thisYearBirthday, 1)
+              : thisYearBirthday;
+
+          const daysUntilBirthday = differenceInDays(targetBirthday, today);
+
+          return {
+            ...contact,
+            daysUntilBirthday,
+          };
+        })
+        .filter(
+          (contact: any) =>
+            contact.daysUntilBirthday <= 14 && contact.daysUntilBirthday >= 0
+        )
+        .sort((a: any, b: any) => a.daysUntilBirthday - b.daysUntilBirthday);
+
+      // If we have upcoming birthdays, show the first one
+      if (upcomingBirthdays.length > 0) {
+        // Check if we've already shown this birthday notification
+        const notifiedBirthdays = JSON.parse(
+          localStorage.getItem(`${userDataKey}_notifiedBirthdays`) || "[]"
+        );
+
+        // Find the first birthday that hasn't been notified about
+        const birthdayToNotify = upcomingBirthdays.find(
+          (contact: any) =>
+            !notifiedBirthdays.includes(`${contact.id}_${today.getFullYear()}`)
+        );
+
+        if (birthdayToNotify) {
+          setContactWithBirthday(birthdayToNotify);
+          setIsBirthdayPromptOpen(true);
+
+          // Mark this birthday as notified for this year
+          notifiedBirthdays.push(
+            `${birthdayToNotify.id}_${today.getFullYear()}`
+          );
+          localStorage.setItem(
+            `${userDataKey}_notifiedBirthdays`,
+            JSON.stringify(notifiedBirthdays)
+          );
+        }
+      }
+    };
+
+    // Check for birthdays on component mount
+    checkForUpcomingBirthdays();
+
+    // Also set up a daily check
+    const checkInterval = setInterval(
+      checkForUpcomingBirthdays,
+      24 * 60 * 60 * 1000
+    );
+
+    return () => {
+      clearInterval(checkInterval);
+    };
+  }, [user]);
+
   // Handle adding a new event
   const handleAddEvent = () => {
     setIsAddEventOpen(true);
@@ -238,6 +356,104 @@ const Dashboard = () => {
 
   const handleSetupNotifications = () => {
     setIsNotificationsOpen(true);
+  };
+
+  // Add upcoming birthdays to dashboard cards
+  const renderUpcomingBirthdays = () => {
+    if (!user) return null;
+
+    const userId = user.username;
+    const userDataKey = `userData_${userId}`;
+    const userData = JSON.parse(localStorage.getItem(userDataKey) || "{}");
+    const contacts = userData.contacts || [];
+
+    // Get contacts with birthdays
+    const contactsWithBirthdays = contacts.filter(
+      (contact: Contact) => contact.birthday
+    );
+
+    if (contactsWithBirthdays.length === 0) return null;
+
+    const today = new Date();
+
+    // Find contacts with birthdays in the next 30 days
+    const upcomingBirthdays = contactsWithBirthdays
+      .map((contact: Contact) => {
+        const birthDate = parseISO(contact.birthday);
+
+        // Get this year's birthday
+        const thisYearBirthday = new Date(
+          today.getFullYear(),
+          birthDate.getMonth(),
+          birthDate.getDate()
+        );
+
+        // If birthday has passed this year, calculate for next year
+        const targetBirthday =
+          thisYearBirthday < today
+            ? addYears(thisYearBirthday, 1)
+            : thisYearBirthday;
+
+        const daysUntilBirthday = differenceInDays(targetBirthday, today);
+
+        return {
+          ...contact,
+          daysUntilBirthday,
+        };
+      })
+      .filter(
+        (contact: any) =>
+          contact.daysUntilBirthday <= 30 && contact.daysUntilBirthday >= 0
+      )
+      .sort((a: any, b: any) => a.daysUntilBirthday - b.daysUntilBirthday)
+      .slice(0, 3); // Show max 3 upcoming birthdays
+
+    if (upcomingBirthdays.length === 0) return null;
+
+    return (
+      <Card className="col-span-1 md:col-span-2 lg:col-span-4 hover:shadow-md transition-shadow duration-300">
+        <CardHeader className="pb-2">
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-lg font-medium">
+              Anniversaires à venir
+            </CardTitle>
+            <Cake className="h-5 w-5 text-pink-500" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {upcomingBirthdays.map((contact: any) => (
+              <div
+                key={contact.id}
+                className="flex items-center justify-between border-b pb-2"
+              >
+                <div>
+                  <div className="font-medium">{contact.name}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {contact.daysUntilBirthday === 0
+                      ? "Aujourd'hui !"
+                      : contact.daysUntilBirthday === 1
+                      ? "Demain"
+                      : `Dans ${contact.daysUntilBirthday} jours`}
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setContactWithBirthday(contact);
+                    setIsBirthdayPromptOpen(true);
+                  }}
+                  className="gap-1"
+                >
+                  <Gift className="h-4 w-4" />
+                  Offrir un cadeau
+                </Button>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
   };
 
   if (isNewUser) {
@@ -427,6 +643,8 @@ const Dashboard = () => {
             </Button>
           </CardContent>
         </Card>
+
+        {renderUpcomingBirthdays()}
       </div>
 
       {stats.upcomingEvents === 0 && (
@@ -574,6 +792,14 @@ const Dashboard = () => {
         <NotificationsDialog
           open={isNotificationsOpen}
           onOpenChange={(open) => setIsNotificationsOpen(open)}
+        />
+      )}
+
+      {contactWithBirthday && (
+        <BirthdayGiftPrompt
+          isOpen={isBirthdayPromptOpen}
+          onClose={() => setIsBirthdayPromptOpen(false)}
+          contact={contactWithBirthday}
         />
       )}
     </div>

@@ -59,6 +59,18 @@ const Contacts = () => {
   // Contacts data
   const [contacts, setContacts] = useState([]);
 
+  // Define the Contact interface
+  interface Contact {
+    id: number;
+    name: string;
+    relationship: string;
+    giftsReceived: number;
+    giftsGiven: number;
+    upcoming: string | null;
+    interests: string[];
+    birthday?: string; // Add birthday field
+  }
+
   // Mock data for gifts
   const mockGifts = [
     {
@@ -130,7 +142,7 @@ const Contacts = () => {
 
   // Handle add new contact
   const handleAddContact = (data: any) => {
-    const newContact = {
+    const newContact: Contact = {
       id: contacts.length + 1,
       name: data.name,
       relationship: data.relationship,
@@ -138,6 +150,7 @@ const Contacts = () => {
       giftsGiven: 0,
       upcoming: null,
       interests: data.interests.split(",").map((item: string) => item.trim()),
+      birthday: data.birthday || null, // Save birthday
     };
 
     setContacts([...contacts, newContact]);
@@ -158,6 +171,7 @@ const Contacts = () => {
           interests: data.interests
             .split(",")
             .map((item: string) => item.trim()),
+          birthday: data.birthday || contact.birthday || null, // Preserve or update birthday
         };
       }
       return contact;
@@ -174,6 +188,7 @@ const Contacts = () => {
       name: "",
       relationship: "Ami",
       interests: "",
+      birthday: "", // Add birthday field
     },
   });
 
@@ -182,6 +197,7 @@ const Contacts = () => {
       name: selectedContact?.name || "",
       relationship: selectedContact?.relationship || "Ami",
       interests: selectedContact ? selectedContact.interests.join(", ") : "",
+      birthday: selectedContact?.birthday || "", // Add birthday field
     },
   });
 
@@ -192,6 +208,7 @@ const Contacts = () => {
       name: contact.name,
       relationship: contact.relationship,
       interests: contact.interests.join(", "),
+      birthday: contact.birthday || "", // Set birthday
     });
     setIsEditContactOpen(true);
   };
@@ -274,6 +291,24 @@ const Contacts = () => {
                       <FormControl>
                         <Input
                           placeholder="Livres, Café, Voyage..."
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={addContactForm.control}
+                  name="birthday"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Date d'anniversaire</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          placeholder="Date d'anniversaire"
                           {...field}
                         />
                       </FormControl>
@@ -612,6 +647,24 @@ const Contacts = () => {
                                 <FormControl>
                                   <Input
                                     placeholder="Livres, Café, Voyage..."
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={editContactForm.control}
+                            name="birthday"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Date d'anniversaire</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="date"
+                                    placeholder="Date d'anniversaire"
                                     {...field}
                                   />
                                 </FormControl>

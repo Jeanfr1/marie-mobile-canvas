@@ -20,6 +20,8 @@ import {
   isBefore,
   format,
 } from "date-fns";
+import { useLocation } from "react-router-dom";
+import { Celebration } from "@/components/animations/Celebration";
 
 // Extended GiftItem interface for given gifts (with required 'to' property)
 interface GivenGiftItem extends GiftItem {
@@ -37,6 +39,7 @@ const parseGiftDate = (dateString: string): Date => {
 
 const GiftsGiven = () => {
   const { user } = useAuth();
+  const location = useLocation();
   const [selectedGift, setSelectedGift] = useState<GivenGiftItem | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -47,8 +50,24 @@ const GiftsGiven = () => {
     dateTo: "",
     occasion: "",
   });
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [suggestedRecipient, setSuggestedRecipient] = useState<string | null>(
+    null
+  );
+  const [isBirthdayGift, setIsBirthdayGift] = useState(false);
 
   const [gifts, setGifts] = useState<GivenGiftItem[]>([]);
+
+  // Check for suggested recipient from location state (from birthday prompt)
+  useEffect(() => {
+    if (location.state?.suggestedRecipient) {
+      setSuggestedRecipient(location.state.suggestedRecipient);
+    }
+
+    if (location.state?.birthdayGift) {
+      setIsBirthdayGift(true);
+    }
+  }, [location.state]);
 
   // When component mounts, load gifts from localStorage if available
   useEffect(() => {
@@ -119,11 +138,30 @@ const GiftsGiven = () => {
         });
       }
 
-      toast.success("Nouveau cadeau ajouté !", {
-        description: `${newGift.name} pour ${
-          (newGift as GivenGiftItem).to
-        } a été ajouté à vos cadeaux.`,
-      });
+      // Show celebration animation if it's a birthday gift
+      if (
+        isBirthdayGift ||
+        (suggestedRecipient && newGift.to === suggestedRecipient)
+      ) {
+        setShowCelebration(true);
+
+        toast.success("Cadeau d'anniversaire ajouté ! 🎂", {
+          description: `Excellent choix ! Votre cadeau pour ${
+            (newGift as GivenGiftItem).to
+          } a été enregistré.`,
+          duration: 5000,
+        });
+
+        // Reset birthday gift state
+        setIsBirthdayGift(false);
+        setSuggestedRecipient(null);
+      } else {
+        toast.success("Nouveau cadeau ajouté !", {
+          description: `${newGift.name} pour ${
+            (newGift as GivenGiftItem).to
+          } a été ajouté à vos cadeaux.`,
+        });
+      }
     } catch (error) {
       console.error("Error adding gift:", error);
       toast.error("Une erreur s'est produite lors de l'ajout du cadeau");
@@ -191,7 +229,11 @@ const GiftsGiven = () => {
             Suivez et gérez les cadeaux que vous avez offerts
           </p>
         </div>
-        <AddGiftDialog type="given" onGiftAdded={handleAddGift} />
+        <AddGiftDialog
+          type="given"
+          onGiftAdded={handleAddGift}
+          suggestedRecipient={suggestedRecipient}
+        />
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 justify-between">
@@ -347,6 +389,13 @@ const GiftsGiven = () => {
           />
         </>
       )}
+
+      {/* Add celebration component */}
+      <Celebration
+        show={showCelebration}
+        duration={4000}
+        onComplete={() => setShowCelebration(false)}
+      />
     </div>
   );
 };
