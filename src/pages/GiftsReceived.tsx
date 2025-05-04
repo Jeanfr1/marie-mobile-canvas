@@ -6,12 +6,19 @@ import { Gift, Search, Image, Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AddGiftDialog } from "@/components/gifts/AddGiftDialog";
 import { GiftDetailsDialog } from "@/components/gifts/GiftDetailsDialog";
-import { GiftFilters } from "@/components/gifts/GiftFilters";
+import { GiftFilters, GiftFiltersValues } from "@/components/gifts/GiftFilters";
 import { SendThanksDialog } from "@/components/gifts/SendThanksDialog";
 import { toast } from "@/components/ui/sonner";
 import { ContextualHelp } from "@/components/helpers/ContextualHelp";
 import { useAuth } from "@/lib/auth-context";
-import { parse, isValid, compareDesc } from "date-fns";
+import {
+  parse,
+  isValid,
+  compareDesc,
+  isAfter,
+  isBefore,
+  format,
+} from "date-fns";
 
 export interface GiftItem {
   id: number;
@@ -46,6 +53,11 @@ const GiftsReceived = () => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isThanksOpen, setIsThanksOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState<GiftFiltersValues>({
+    dateFrom: "",
+    dateTo: "",
+    occasion: "",
+  });
 
   const [gifts, setGifts] = useState<GiftItem[]>([]);
 
@@ -158,17 +170,50 @@ const GiftsReceived = () => {
     }
   };
 
-  // Filter gifts based on search query
+  const handleFilterChange = (newFilters: GiftFiltersValues) => {
+    setFilters(newFilters);
+  };
+
+  // Filter gifts based on search query and filters
   const filteredGifts = gifts
     .filter((gift) => {
-      if (!searchQuery.trim()) return true;
+      // Text search filter
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        const textMatch =
+          gift.name.toLowerCase().includes(query) ||
+          gift.from.toLowerCase().includes(query) ||
+          gift.occasion.toLowerCase().includes(query);
 
-      const query = searchQuery.toLowerCase();
-      return (
-        gift.name.toLowerCase().includes(query) ||
-        gift.from.toLowerCase().includes(query) ||
-        gift.occasion.toLowerCase().includes(query)
-      );
+        if (!textMatch) return false;
+      }
+
+      // Date range filter
+      if (filters.dateFrom) {
+        const fromDate = parse(filters.dateFrom, "yyyy-MM-dd", new Date());
+        const giftDate = parseGiftDate(gift.date);
+        if (isValid(fromDate) && isBefore(giftDate, fromDate)) {
+          return false;
+        }
+      }
+
+      if (filters.dateTo) {
+        const toDate = parse(filters.dateTo, "yyyy-MM-dd", new Date());
+        const giftDate = parseGiftDate(gift.date);
+        if (isValid(toDate) && isAfter(giftDate, toDate)) {
+          return false;
+        }
+      }
+
+      // Occasion filter
+      if (
+        filters.occasion &&
+        !gift.occasion.toLowerCase().includes(filters.occasion.toLowerCase())
+      ) {
+        return false;
+      }
+
+      return true;
     })
     // Sort gifts by date (most recent first)
     .sort((a, b) => {
@@ -214,28 +259,52 @@ const GiftsReceived = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <GiftFilters />
+        <GiftFilters onFilterChange={handleFilterChange} />
       </div>
+
+      {/* Show active filters if any are set */}
+      {(filters.dateFrom || filters.dateTo || filters.occasion) && (
+        <div className="bg-muted rounded-md p-3 text-sm">
+          <p className="font-medium mb-1">Filtres actifs:</p>
+          <div className="flex flex-wrap gap-2">
+            {filters.dateFrom && (
+              <Badge variant="outline">À partir de: {filters.dateFrom}</Badge>
+            )}
+            {filters.dateTo && (
+              <Badge variant="outline">Jusqu'à: {filters.dateTo}</Badge>
+            )}
+            {filters.occasion && (
+              <Badge variant="outline">Occasion: {filters.occasion}</Badge>
+            )}
+          </div>
+        </div>
+      )}
 
       {filteredGifts.length === 0 ? (
         <div className="text-center py-10">
           <Gift className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-medium">Aucun cadeau trouvé</h3>
           <p className="text-muted-foreground">
-            {searchQuery
+            {searchQuery ||
+            filters.dateFrom ||
+            filters.dateTo ||
+            filters.occasion
               ? "Essayez d'ajuster votre recherche ou vos filtres"
               : "Cliquez sur le bouton 'Ajouter un cadeau' pour ajouter votre premier cadeau"}
           </p>
-          {!searchQuery && (
-            <Button
-              onClick={() =>
-                document.getElementById("add-gift-button")?.click()
-              }
-              className="mt-4"
-            >
-              Ajouter votre premier cadeau
-            </Button>
-          )}
+          {!searchQuery &&
+            !filters.dateFrom &&
+            !filters.dateTo &&
+            !filters.occasion && (
+              <Button
+                onClick={() =>
+                  document.getElementById("add-gift-button")?.click()
+                }
+                className="mt-4"
+              >
+                Ajouter votre premier cadeau
+              </Button>
+            )}
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
