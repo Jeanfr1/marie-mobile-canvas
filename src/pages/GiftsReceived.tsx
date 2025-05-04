@@ -11,6 +11,7 @@ import { SendThanksDialog } from "@/components/gifts/SendThanksDialog";
 import { toast } from "@/components/ui/sonner";
 import { ContextualHelp } from "@/components/helpers/ContextualHelp";
 import { useAuth } from "@/lib/auth-context";
+import { parse, isValid, compareDesc } from "date-fns";
 
 export interface GiftItem {
   id: number;
@@ -28,6 +29,15 @@ export interface GiftItem {
 export const dispatchGlobalEvent = (eventName: string, data?: any) => {
   const event = new CustomEvent(eventName, { detail: data });
   window.dispatchEvent(event);
+};
+
+// Helper function to parse date strings to Date objects
+const parseGiftDate = (dateString: string): Date => {
+  // Try to parse the date in YYYY-MM-DD format
+  const parsed = parse(dateString, "yyyy-MM-dd", new Date());
+
+  // Return the parsed date if valid, otherwise return a fallback date
+  return isValid(parsed) ? parsed : new Date(0); // fallback to epoch time if invalid
 };
 
 const GiftsReceived = () => {
@@ -149,16 +159,23 @@ const GiftsReceived = () => {
   };
 
   // Filter gifts based on search query
-  const filteredGifts = gifts.filter((gift) => {
-    if (!searchQuery.trim()) return true;
+  const filteredGifts = gifts
+    .filter((gift) => {
+      if (!searchQuery.trim()) return true;
 
-    const query = searchQuery.toLowerCase();
-    return (
-      gift.name.toLowerCase().includes(query) ||
-      gift.from.toLowerCase().includes(query) ||
-      gift.occasion.toLowerCase().includes(query)
-    );
-  });
+      const query = searchQuery.toLowerCase();
+      return (
+        gift.name.toLowerCase().includes(query) ||
+        gift.from.toLowerCase().includes(query) ||
+        gift.occasion.toLowerCase().includes(query)
+      );
+    })
+    // Sort gifts by date (most recent first)
+    .sort((a, b) => {
+      const dateA = parseGiftDate(a.date);
+      const dateB = parseGiftDate(b.date);
+      return compareDesc(dateA, dateB); // compareDesc for descending order (newest first)
+    });
 
   return (
     <div className="space-y-6">
