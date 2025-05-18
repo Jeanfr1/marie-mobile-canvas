@@ -20,6 +20,13 @@ import {
   format,
 } from "date-fns";
 import { EditGiftDialog } from "@/components/gifts/EditGiftDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreVertical, Trash } from "lucide-react";
 
 export interface GiftItem {
   id: number;
@@ -344,91 +351,74 @@ const GiftsReceived = () => {
               key={gift.id}
               className="overflow-hidden hover:shadow-md transition-shadow duration-300"
             >
-              <div className="flex flex-col sm:flex-row h-full">
-                <div className="w-full sm:w-1/3 h-48 sm:h-auto bg-muted relative overflow-hidden">
-                  {gift.image ? (
-                    <img
-                      src={gift.image}
-                      alt={gift.name}
-                      className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full bg-gray-100">
-                      <Image className="h-12 w-12 text-muted-foreground" />
-                    </div>
-                  )}
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className="text-xl font-semibold">{gift.name}</h3>
+                    <p className="text-muted-foreground text-sm">
+                      De: {gift.from}
+                    </p>
+                  </div>
+                  <Badge variant={gift.thanked ? "secondary" : "outline"}>
+                    {gift.thanked ? "Remercié" : "En attente"}
+                  </Badge>
                 </div>
 
-                <div className="flex-1">
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-xl">{gift.name}</CardTitle>
-                        <p className="text-muted-foreground text-sm">
-                          De: {gift.from}
-                        </p>
-                      </div>
-                      <Badge variant={gift.thanked ? "secondary" : "outline"}>
-                        {gift.thanked ? "Remercié" : "Remerciement en attente"}
-                      </Badge>
-                    </div>
-                  </CardHeader>
+                <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground text-xs sm:text-sm">
+                      Date de réception:
+                    </p>
+                    <p className="font-medium">{gift.date}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs sm:text-sm">
+                      Occasion:
+                    </p>
+                    <p className="font-medium">{gift.occasion}</p>
+                  </div>
+                </div>
 
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div>
-                          <p className="text-muted-foreground text-xs sm:text-sm">
-                            Date de réception:
-                          </p>
-                          <p className="font-medium">{gift.date}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground text-xs sm:text-sm">
-                            Occasion:
-                          </p>
-                          <p className="font-medium">{gift.occasion}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-wrap gap-2 pt-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 min-w-[90px] text-xs sm:text-sm"
-                          onClick={() => handleViewDetails(gift)}
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => handleViewDetails(gift)}
+                  >
+                    Voir les détails
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => handleEdit(gift)}
+                  >
+                    Modifier
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {!gift.thanked && (
+                        <DropdownMenuItem
+                          onClick={() => handleSendThanks(gift)}
                         >
-                          Voir les détails
-                        </Button>
-                        {!gift.thanked && (
-                          <Button
-                            size="sm"
-                            className="flex-1 gap-1 min-w-[90px] text-xs sm:text-sm"
-                            onClick={() => handleSendThanks(gift)}
-                          >
-                            <Heart className="h-4 w-4" />
-                            Remercier
-                          </Button>
-                        )}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 min-w-[90px] text-xs sm:text-sm"
-                          onClick={() => handleEdit(gift)}
-                        >
-                          Modifier
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-xs"
-                          onClick={() => handleDelete(gift.id)}
-                        >
-                          Supprimer
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
+                          Envoyer un remerciement
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem
+                        className="text-destructive"
+                        onClick={() => handleDelete(gift.id)}
+                      >
+                        <Trash className="h-4 w-4 mr-2" />
+                        Supprimer
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             </Card>
