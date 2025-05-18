@@ -1,11 +1,20 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/sonner";
 import { CalendarIcon, Image as ImageIcon, Upload } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
@@ -16,24 +25,38 @@ interface EditGiftDialogProps {
   gift: {
     id: number;
     name: string;
-    to: string;
+    to?: string;
+    from?: string;
     date: string;
     occasion: string;
     cost?: number | string;
     image?: string | null;
+    thanked?: boolean;
   };
+  type: "given" | "received";
+  onSave: (gift: any) => void;
 }
 
-export const EditGiftDialog = ({ isOpen, onClose, gift }: EditGiftDialogProps) => {
+export const EditGiftDialog = ({
+  isOpen,
+  onClose,
+  gift,
+  type,
+  onSave,
+}: EditGiftDialogProps) => {
   const [giftData, setGiftData] = useState({
     name: gift.name || "",
     to: gift.to || "",
+    from: gift.from || "",
     date: gift.date || "",
     occasion: gift.occasion || "",
-    cost: typeof gift.cost === "number"
-      ? gift.cost.toString()
-      : (gift.cost || "").toString().replace(/[^\d.,]/g, ""),
-    image: gift.image || null
+    cost:
+      typeof gift.cost === "number"
+        ? gift.cost.toString()
+        : (gift.cost || "").toString().replace(/[^\d.,]/g, ""),
+    image: gift.image || null,
+    thanked: gift.thanked || false,
+    id: gift.id,
   });
 
   // Update form data when gift prop changes
@@ -42,12 +65,16 @@ export const EditGiftDialog = ({ isOpen, onClose, gift }: EditGiftDialogProps) =
       setGiftData({
         name: gift.name || "",
         to: gift.to || "",
+        from: gift.from || "",
         date: gift.date || "",
         occasion: gift.occasion || "",
-        cost: typeof gift.cost === "number"
-          ? gift.cost.toString()
-          : (gift.cost || "").toString().replace(/[^\d.,]/g, ""),
-        image: gift.image || null
+        cost:
+          typeof gift.cost === "number"
+            ? gift.cost.toString()
+            : (gift.cost || "").toString().replace(/[^\d.,]/g, ""),
+        image: gift.image || null,
+        thanked: gift.thanked || false,
+        id: gift.id,
       });
 
       setDate(gift.date ? new Date(gift.date) : undefined);
@@ -59,11 +86,13 @@ export const EditGiftDialog = ({ isOpen, onClose, gift }: EditGiftDialogProps) =
     gift.date ? new Date(gift.date) : undefined
   );
 
-  const [imagePreview, setImagePreview] = useState<string | null>(gift.image || null);
+  const [imagePreview, setImagePreview] = useState<string | null>(
+    gift.image || null
+  );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setGiftData(prev => ({ ...prev, [name]: value }));
+    setGiftData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,7 +103,7 @@ export const EditGiftDialog = ({ isOpen, onClose, gift }: EditGiftDialogProps) =
     if (file.size > 5 * 1024 * 1024) {
       toast({
         title: "L'image est trop grande",
-        description: "Veuillez sélectionner une image de moins de 5 Mo"
+        description: "Veuillez sélectionner une image de moins de 5 Mo",
       });
       return;
     }
@@ -84,17 +113,17 @@ export const EditGiftDialog = ({ isOpen, onClose, gift }: EditGiftDialogProps) =
     reader.onload = (event) => {
       const result = event.target?.result as string;
       setImagePreview(result);
-      setGiftData(prev => ({ ...prev, image: result }));
+      setGiftData((prev) => ({ ...prev, image: result }));
     };
     reader.readAsDataURL(file);
   };
 
   const handleSave = () => {
-    // Here you would typically save to your backend
-    // For now, we'll just show a success toast
-    toast({
-      title: "Cadeau mis à jour",
-      description: `${giftData.name} a été mis à jour avec succès`
+    onSave({
+      ...giftData,
+      cost: giftData.cost
+        ? parseFloat(giftData.cost.toString().replace(",", "."))
+        : undefined,
     });
     onClose();
   };
@@ -122,15 +151,27 @@ export const EditGiftDialog = ({ isOpen, onClose, gift }: EditGiftDialogProps) =
             />
           </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="recipient">Destinataire</Label>
-            <Input
-              id="recipient"
-              name="to"
-              value={giftData.to}
-              onChange={handleChange}
-            />
-          </div>
+          {type === "given" ? (
+            <div className="grid gap-2">
+              <Label htmlFor="recipient">Destinataire</Label>
+              <Input
+                id="recipient"
+                name="to"
+                value={giftData.to}
+                onChange={handleChange}
+              />
+            </div>
+          ) : (
+            <div className="grid gap-2">
+              <Label htmlFor="from">De la part de</Label>
+              <Input
+                id="from"
+                name="from"
+                value={giftData.from}
+                onChange={handleChange}
+              />
+            </div>
+          )}
 
           <div className="grid gap-2">
             <Label htmlFor="date">Date d'offre</Label>
@@ -154,9 +195,9 @@ export const EditGiftDialog = ({ isOpen, onClose, gift }: EditGiftDialogProps) =
                   onSelect={(newDate) => {
                     setDate(newDate);
                     if (newDate) {
-                      setGiftData(prev => ({
+                      setGiftData((prev) => ({
                         ...prev,
-                        date: format(newDate, "yyyy-MM-dd")
+                        date: format(newDate, "yyyy-MM-dd"),
                       }));
                     }
                   }}
@@ -205,7 +246,7 @@ export const EditGiftDialog = ({ isOpen, onClose, gift }: EditGiftDialogProps) =
                     className="absolute top-2 right-2"
                     onClick={() => {
                       setImagePreview(null);
-                      setGiftData(prev => ({ ...prev, image: null }));
+                      setGiftData((prev) => ({ ...prev, image: null }));
                     }}
                   >
                     Supprimer
@@ -215,8 +256,12 @@ export const EditGiftDialog = ({ isOpen, onClose, gift }: EditGiftDialogProps) =
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center space-y-2">
                   <ImageIcon className="h-8 w-8 text-muted-foreground" />
                   <div className="text-center">
-                    <p className="text-sm text-muted-foreground">Télécharger une image de votre cadeau</p>
-                    <p className="text-xs text-muted-foreground">PNG, JPG jusqu'à 5 Mo</p>
+                    <p className="text-sm text-muted-foreground">
+                      Télécharger une image de votre cadeau
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      PNG, JPG jusqu'à 5 Mo
+                    </p>
                   </div>
                   <label htmlFor="image-upload" className="cursor-pointer">
                     <div className="flex items-center space-x-2 bg-primary text-primary-foreground hover:bg-primary/90 h-9 rounded-md px-3 text-sm transition-colors">
@@ -238,7 +283,9 @@ export const EditGiftDialog = ({ isOpen, onClose, gift }: EditGiftDialogProps) =
         </div>
 
         <div className="flex justify-end space-x-2">
-          <Button variant="outline" onClick={onClose}>Annuler</Button>
+          <Button variant="outline" onClick={onClose}>
+            Annuler
+          </Button>
           <Button onClick={handleSave}>Enregistrer</Button>
         </div>
       </DialogContent>

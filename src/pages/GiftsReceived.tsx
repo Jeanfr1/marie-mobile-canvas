@@ -19,6 +19,7 @@ import {
   isBefore,
   format,
 } from "date-fns";
+import { EditGiftDialog } from "@/components/gifts/EditGiftDialog";
 
 export interface GiftItem {
   id: number;
@@ -52,6 +53,7 @@ const GiftsReceived = () => {
   const [selectedGift, setSelectedGift] = useState<GiftItem | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isThanksOpen, setIsThanksOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<GiftFiltersValues>({
     dateFrom: "",
@@ -172,6 +174,24 @@ const GiftsReceived = () => {
 
   const handleFilterChange = (newFilters: GiftFiltersValues) => {
     setFilters(newFilters);
+  };
+
+  const handleEdit = (gift: GiftItem) => {
+    setSelectedGift(gift);
+    setIsEditOpen(true);
+  };
+
+  const handleSaveEdit = (updatedGift: GiftItem) => {
+    setGifts((prevGifts) =>
+      prevGifts.map((gift) =>
+        gift.id === updatedGift.id ? { ...gift, ...updatedGift } : gift
+      )
+    );
+    setIsEditOpen(false);
+    setSelectedGift(null);
+    toast.success("Cadeau modifié !", {
+      description: `${updatedGift.name} a été modifié avec succès.`,
+    });
   };
 
   // Filter gifts based on search query and filters
@@ -377,6 +397,14 @@ const GiftsReceived = () => {
                             Envoyer un remerciement
                           </Button>
                         )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => handleEdit(gift)}
+                        >
+                          Modifier
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
@@ -401,6 +429,18 @@ const GiftsReceived = () => {
             onClose={() => setIsThanksOpen(false)}
             gift={selectedGift}
             onSendThanks={handleMarkAsThanked}
+          />
+
+          <EditGiftDialog
+            isOpen={isEditOpen}
+            onClose={() => setIsEditOpen(false)}
+            gift={{
+              ...selectedGift,
+              to: undefined, // Hide 'to' field for received gifts
+              from: selectedGift.from,
+            }}
+            onSave={handleSaveEdit}
+            type="received"
           />
         </>
       )}
