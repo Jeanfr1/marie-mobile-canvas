@@ -18,6 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
+import { Storage } from "aws-amplify";
 
 interface EditGiftDialogProps {
   isOpen: boolean;
@@ -90,32 +91,51 @@ export const EditGiftDialog = ({
     gift.image || null
   );
 
+  const [uploadingImage, setUploadingImage] = useState(false);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setGiftData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     // Check file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "L'image est trop grande",
-        description: "Veuillez sélectionner une image de moins de 5 Mo",
-      });
+      toast.error("L'image est trop grande. Maximum 5 Mo.");
       return;
     }
 
-    // Create preview URL
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
-      setImagePreview(result);
-      setGiftData((prev) => ({ ...prev, image: result }));
-    };
-    reader.readAsDataURL(file);
+    try {
+      setUploadingImage(true);
+
+      // Generate a unique key for the image
+      const fileName = `${Date.now()}-${file.name}`;
+
+      // Upload file to S3 using Amplify Storage
+      const result = await Storage.put(fileName, file, {
+        contentType: file.type,
+        progressCallback: (progress) => {
+          console.log(`Uploaded: ${progress.loaded}/${progress.total}`);
+        },
+      });
+
+      // Get the public URL of the uploaded image
+      const imageUrl = await Storage.get(fileName);
+
+      // Update the state with the image URL
+      setImagePreview(imageUrl.toString());
+      setGiftData((prev) => ({ ...prev, image: imageUrl.toString() }));
+
+      toast.success("Image téléchargée avec succès!");
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast.error("Erreur lors du téléchargement de l'image");
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleSave = () => {
@@ -280,8 +300,14 @@ export const EditGiftDialog = ({
                   </div>
                   <label htmlFor="image-upload" className="cursor-pointer">
                     <div className="flex items-center space-x-2 bg-primary text-primary-foreground hover:bg-primary/90 h-9 rounded-md px-3 text-sm transition-colors">
-                      <Upload size={14} />
-                      <span>Choisir un fichier</span>
+                      {uploadingImage ? (
+                        <span>Téléchargement...</span>
+                      ) : (
+                        <>
+                          <Upload size={14} />
+                          <span>Choisir un fichier</span>
+                        </>
+                      )}
                     </div>
                     <Input
                       id="image-upload"
@@ -289,6 +315,7 @@ export const EditGiftDialog = ({
                       accept="image/*"
                       className="sr-only"
                       onChange={handleImageChange}
+                      disabled={uploadingImage}
                     />
                   </label>
                 </div>
@@ -301,7 +328,9 @@ export const EditGiftDialog = ({
           <Button variant="outline" onClick={onClose}>
             Annuler
           </Button>
-          <Button onClick={handleSave}>Enregistrer</Button>
+          <Button onClick={handleSave} disabled={uploadingImage}>
+            Enregistrer
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Plus, Upload, Image } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { GiftItem } from "@/pages/GiftsReceived";
+import { Storage } from "aws-amplify";
 
 interface AddGiftDialogProps {
   type: "received" | "given";
@@ -34,6 +35,7 @@ export const AddGiftDialog = ({
   const [giftOccasion, setGiftOccasion] = useState("");
   const [giftCost, setGiftCost] = useState("");
   const [giftImage, setGiftImage] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Set the suggested recipient if provided
@@ -124,14 +126,41 @@ export const AddGiftDialog = ({
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setGiftImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("L'image est trop grande. Maximum 5 Mo.");
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+
+      // Generate a unique key for the image
+      const fileName = `${Date.now()}-${file.name}`;
+
+      // Upload file to S3 using Amplify Storage
+      const result = await Storage.put(fileName, file, {
+        contentType: file.type,
+        progressCallback: (progress) => {
+          console.log(`Uploaded: ${progress.loaded}/${progress.total}`);
+        },
+      });
+
+      // Get the public URL of the uploaded image
+      const imageUrl = await Storage.get(fileName);
+
+      // Update the state with the image URL
+      setGiftImage(imageUrl.toString());
+      toast.success("Image téléchargée avec succès!");
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast.error("Erreur lors du téléchargement de l'image");
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -232,14 +261,21 @@ export const AddGiftDialog = ({
                 htmlFor="gift-image-upload"
                 className="flex h-10 items-center justify-center rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background hover:bg-accent hover:text-accent-foreground cursor-pointer"
               >
-                <Upload className="h-4 w-4 mr-2" />
-                <span>Télécharger</span>
+                {uploadingImage ? (
+                  <span>Téléchargement...</span>
+                ) : (
+                  <>
+                    <Upload className="h-4 w-4 mr-2" />
+                    <span>Télécharger</span>
+                  </>
+                )}
                 <input
                   id="gift-image-upload"
                   type="file"
                   accept="image/*"
                   className="hidden"
                   onChange={handleImageUpload}
+                  disabled={uploadingImage}
                 />
               </Label>
               {giftImage && (
@@ -255,7 +291,7 @@ export const AddGiftDialog = ({
           </div>
 
           <DialogFooter>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || uploadingImage}>
               {isSubmitting ? "Ajout en cours..." : "Ajouter le cadeau"}
             </Button>
           </DialogFooter>
