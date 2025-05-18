@@ -351,7 +351,16 @@ const GiftsReceived = () => {
               key={gift.id}
               className="overflow-hidden hover:shadow-md transition-shadow duration-300"
             >
-              <div className="p-6">
+              <div className={`p-6 ${gift.image ? "pt-0" : ""}`}>
+                {gift.image && (
+                  <div className="w-full h-48 -mx-6 -mt-0 mb-4 overflow-hidden">
+                    <img
+                      src={gift.image}
+                      alt={gift.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <h3 className="text-xl font-semibold">{gift.name}</h3>
