@@ -145,34 +145,82 @@ const GiftsReceived = () => {
   };
 
   const handleAddGift = (newGift: GiftItem) => {
+    console.log("handleAddGift called with:", JSON.stringify(newGift, null, 2));
     try {
       const giftWithId = {
         ...newGift,
         id: Date.now(), // Ensure unique ID
       };
+      console.log("Gift with ID created:", giftWithId.id);
 
       setGifts((prevGifts) => [...prevGifts, giftWithId]);
       setIsFirstTimeView(false);
+      console.log("Gifts state updated");
 
       // Update localStorage right away
       if (user) {
-        const userId = user.username;
-        const userDataKey = `userData_${userId}`;
-        const userData = JSON.parse(localStorage.getItem(userDataKey) || "{}");
-        const currentGifts = userData.receivedGifts || [];
-        userData.receivedGifts = [...currentGifts, giftWithId];
-        localStorage.setItem(userDataKey, JSON.stringify(userData));
+        console.log("Updating localStorage with user data");
+        try {
+          const userId = user.username;
+          const userDataKey = `userData_${userId}`;
+          const userData = JSON.parse(
+            localStorage.getItem(userDataKey) || "{}"
+          );
+          const currentGifts = userData.receivedGifts || [];
 
-        // Update dashboard stats
-        dispatchGlobalEvent("gifts-updated", {
-          type: "received",
-          count: currentGifts.length + 1,
-        });
+          // Create gift object for storage, potentially without the image if it's too large
+          let giftForStorage = giftWithId;
+
+          // Check if image is a data URL (very long string)
+          if (
+            giftWithId.image &&
+            typeof giftWithId.image === "string" &&
+            giftWithId.image.startsWith("data:")
+          ) {
+            // For data URLs, try to save it but have a fallback
+            try {
+              // Try saving with the image first
+              userData.receivedGifts = [...currentGifts, giftWithId];
+              localStorage.setItem(userDataKey, JSON.stringify(userData));
+              console.log("localStorage updated with image");
+            } catch (storageError) {
+              console.warn(
+                "Failed to save with image, removing image from storage",
+                storageError
+              );
+              // If that fails, save without the image
+              giftForStorage = { ...giftWithId, image: null };
+              userData.receivedGifts = [...currentGifts, giftForStorage];
+              localStorage.setItem(userDataKey, JSON.stringify(userData));
+              console.log("localStorage updated without image");
+            }
+          } else {
+            // For remote URLs or null images, should be small enough to store
+            userData.receivedGifts = [...currentGifts, giftWithId];
+            localStorage.setItem(userDataKey, JSON.stringify(userData));
+            console.log("localStorage updated with remote image URL");
+          }
+
+          // Update dashboard stats
+          dispatchGlobalEvent("gifts-updated", {
+            type: "received",
+            count: currentGifts.length + 1,
+          });
+          console.log("Dashboard stats updated");
+        } catch (error) {
+          console.error("Error updating localStorage:", error);
+          // Don't let localStorage errors prevent the gift from being added
+          // The gift is already in the state, just won't persist on refresh
+          toast.warning(
+            "Problème avec le stockage local - certaines données peuvent ne pas être sauvegardées"
+          );
+        }
       }
 
       toast.success("Nouveau cadeau ajouté !", {
         description: `${newGift.name} de ${newGift.from} a été ajouté à vos cadeaux.`,
       });
+      console.log("Gift addition completed successfully");
     } catch (error) {
       console.error("Error adding gift:", error);
       toast.error("Une erreur s'est produite lors de l'ajout du cadeau");
