@@ -194,6 +194,17 @@ const GiftsReceived = () => {
     });
   };
 
+  const handleDelete = (giftId: number) => {
+    // Ask for confirmation
+    if (confirm("Êtes-vous sûr de vouloir supprimer ce cadeau ?")) {
+      setGifts((prevGifts) => prevGifts.filter((gift) => gift.id !== giftId));
+
+      toast.success("Cadeau supprimé !", {
+        description: "Le cadeau a été supprimé avec succès.",
+      });
+    }
+  };
+
   // Filter gifts based on search query and filters
   const filteredGifts = gifts
     .filter((gift) => {
@@ -327,7 +338,7 @@ const GiftsReceived = () => {
             )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-20">
           {filteredGifts.map((gift) => (
             <Card
               key={gift.id}
@@ -367,22 +378,24 @@ const GiftsReceived = () => {
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <div>
-                          <p className="text-muted-foreground">
+                          <p className="text-muted-foreground text-xs sm:text-sm">
                             Date de réception:
                           </p>
                           <p className="font-medium">{gift.date}</p>
                         </div>
                         <div>
-                          <p className="text-muted-foreground">Occasion:</p>
+                          <p className="text-muted-foreground text-xs sm:text-sm">
+                            Occasion:
+                          </p>
                           <p className="font-medium">{gift.occasion}</p>
                         </div>
                       </div>
 
-                      <div className="flex gap-2 pt-2">
+                      <div className="flex flex-wrap gap-2 pt-2">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-1"
+                          className="flex-1 min-w-[90px] text-xs sm:text-sm"
                           onClick={() => handleViewDetails(gift)}
                         >
                           Voir les détails
@@ -390,20 +403,28 @@ const GiftsReceived = () => {
                         {!gift.thanked && (
                           <Button
                             size="sm"
-                            className="flex-1 gap-1"
+                            className="flex-1 gap-1 min-w-[90px] text-xs sm:text-sm"
                             onClick={() => handleSendThanks(gift)}
                           >
                             <Heart className="h-4 w-4" />
-                            Envoyer un remerciement
+                            Remercier
                           </Button>
                         )}
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-1"
+                          className="flex-1 min-w-[90px] text-xs sm:text-sm"
                           onClick={() => handleEdit(gift)}
                         >
                           Modifier
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-xs"
+                          onClick={() => handleDelete(gift.id)}
+                        >
+                          Supprimer
                         </Button>
                       </div>
                     </div>

@@ -135,14 +135,16 @@ export const EditGiftDialog = ({
         if (!open) onClose();
       }}
     >
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Modifier le cadeau</DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="name">Nom du cadeau</Label>
+            <Label htmlFor="name" className="text-sm">
+              Nom du cadeau
+            </Label>
             <Input
               id="name"
               name="name"
@@ -153,7 +155,9 @@ export const EditGiftDialog = ({
 
           {type === "given" ? (
             <div className="grid gap-2">
-              <Label htmlFor="recipient">Destinataire</Label>
+              <Label htmlFor="recipient" className="text-sm">
+                Destinataire
+              </Label>
               <Input
                 id="recipient"
                 name="to"
@@ -163,7 +167,9 @@ export const EditGiftDialog = ({
             </div>
           ) : (
             <div className="grid gap-2">
-              <Label htmlFor="from">De la part de</Label>
+              <Label htmlFor="from" className="text-sm">
+                De la part de
+              </Label>
               <Input
                 id="from"
                 name="from"
@@ -174,7 +180,9 @@ export const EditGiftDialog = ({
           )}
 
           <div className="grid gap-2">
-            <Label htmlFor="date">Date d'offre</Label>
+            <Label htmlFor="date" className="text-sm">
+              Date
+            </Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -208,7 +216,9 @@ export const EditGiftDialog = ({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="occasion">Occasion</Label>
+            <Label htmlFor="occasion" className="text-sm">
+              Occasion
+            </Label>
             <Input
               id="occasion"
               name="occasion"
@@ -218,7 +228,9 @@ export const EditGiftDialog = ({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="cost">Coût (€)</Label>
+            <Label htmlFor="cost" className="text-sm">
+              Coût (€)
+            </Label>
             <Input
               id="cost"
               name="cost"
@@ -230,7 +242,9 @@ export const EditGiftDialog = ({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="image">Image du cadeau</Label>
+            <Label htmlFor="image" className="text-sm">
+              Image du cadeau
+            </Label>
             <div className="flex flex-col space-y-2">
               {imagePreview ? (
                 <div className="relative w-full h-40 rounded overflow-hidden border border-input">
@@ -243,7 +257,7 @@ export const EditGiftDialog = ({
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="absolute top-2 right-2"
+                    className="absolute top-2 right-2 text-xs"
                     onClick={() => {
                       setImagePreview(null);
                       setGiftData((prev) => ({ ...prev, image: null }));
@@ -256,7 +270,7 @@ export const EditGiftDialog = ({
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center space-y-2">
                   <ImageIcon className="h-8 w-8 text-muted-foreground" />
                   <div className="text-center">
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       Télécharger une image de votre cadeau
                     </p>
                     <p className="text-xs text-muted-foreground">

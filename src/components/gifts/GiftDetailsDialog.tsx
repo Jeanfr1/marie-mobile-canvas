@@ -27,7 +27,7 @@ export const GiftDetailsDialog = ({
         if (!open) onClose();
       }}
     >
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Détails du cadeau</DialogTitle>
         </DialogHeader>
@@ -50,17 +50,23 @@ export const GiftDetailsDialog = ({
             </p>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-muted-foreground">Date:</p>
-                <p>{gift.date}</p>
+                <p className="text-muted-foreground text-xs sm:text-sm">
+                  Date:
+                </p>
+                <p className="text-sm break-words">{gift.date}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Occasion:</p>
-                <p>{gift.occasion}</p>
+                <p className="text-muted-foreground text-xs sm:text-sm">
+                  Occasion:
+                </p>
+                <p className="text-sm break-words">{gift.occasion}</p>
               </div>
               {type === "given" && gift.cost !== undefined && (
                 <div>
-                  <p className="text-muted-foreground">Coût:</p>
-                  <p>
+                  <p className="text-muted-foreground text-xs sm:text-sm">
+                    Coût:
+                  </p>
+                  <p className="text-sm">
                     {typeof gift.cost === "number"
                       ? `${gift.cost}€`
                       : gift.cost}
@@ -69,8 +75,12 @@ export const GiftDetailsDialog = ({
               )}
               {type === "received" && (
                 <div>
-                  <p className="text-muted-foreground">Remerciement:</p>
-                  <p>{gift.thanked ? "Envoyé" : "En attente"}</p>
+                  <p className="text-muted-foreground text-xs sm:text-sm">
+                    Remerciement:
+                  </p>
+                  <p className="text-sm">
+                    {gift.thanked ? "Envoyé" : "En attente"}
+                  </p>
                 </div>
               )}
             </div>
