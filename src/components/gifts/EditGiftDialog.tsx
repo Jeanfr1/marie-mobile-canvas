@@ -124,6 +124,7 @@ export const EditGiftDialog = ({
       cost: giftData.cost
         ? parseFloat(giftData.cost.toString().replace(",", "."))
         : undefined,
+      image: imagePreview,
     });
     onClose();
   };

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Gift, Search, Image } from "lucide-react";
+import { Gift, Search, Image, MoreVertical, Trash } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AddGiftDialog } from "@/components/gifts/AddGiftDialog";
 import { GiftDetailsDialog } from "@/components/gifts/GiftDetailsDialog";
@@ -22,6 +22,12 @@ import {
 } from "date-fns";
 import { useLocation } from "react-router-dom";
 import { Celebration } from "@/components/animations/Celebration";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Extended GiftItem interface for given gifts (with required 'to' property)
 interface GivenGiftItem extends GiftItem {
@@ -110,6 +116,17 @@ const GiftsGiven = () => {
   const handleEdit = (gift: GivenGiftItem) => {
     setSelectedGift(gift);
     setIsEditOpen(true);
+  };
+
+  const handleDelete = (giftId: number) => {
+    // Ask for confirmation
+    if (confirm("Êtes-vous sûr de vouloir supprimer ce cadeau ?")) {
+      setGifts((prevGifts) => prevGifts.filter((gift) => gift.id !== giftId));
+
+      toast.success("Cadeau supprimé !", {
+        description: "Le cadeau a été supprimé avec succès.",
+      });
+    }
   };
 
   const handleAddGift = (newGift: GiftItem) => {
@@ -220,6 +237,19 @@ const GiftsGiven = () => {
       return compareDesc(dateA, dateB); // compareDesc for descending order (newest first)
     });
 
+  const handleSaveEdit = (updatedGift: GivenGiftItem) => {
+    setGifts((prevGifts) =>
+      prevGifts.map((gift) =>
+        gift.id === updatedGift.id ? { ...gift, ...updatedGift } : gift
+      )
+    );
+    setIsEditOpen(false);
+    setSelectedGift(null);
+    toast.success("Cadeau modifié !", {
+      description: `${updatedGift.name} a été modifié avec succès.`,
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -300,72 +330,70 @@ const GiftsGiven = () => {
               key={gift.id}
               className="overflow-hidden hover:shadow-md transition-shadow duration-300"
             >
-              <div className="flex flex-col sm:flex-row h-full">
-                <div className="w-full sm:w-1/3 h-48 sm:h-auto bg-muted relative overflow-hidden">
-                  {gift.image ? (
-                    <img
-                      src={gift.image}
-                      alt={gift.name}
-                      className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full bg-gray-100">
-                      <Image className="h-12 w-12 text-muted-foreground" />
-                    </div>
-                  )}
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className="text-xl font-semibold">{gift.name}</h3>
+                    <p className="text-muted-foreground text-sm">
+                      Pour: {gift.to}
+                    </p>
+                  </div>
+                  <Badge
+                    variant="secondary"
+                    className="bg-secondary/20 text-secondary border-secondary/30"
+                  >
+                    {gift.cost}€
+                  </Badge>
                 </div>
 
-                <div className="flex-1">
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-xl">{gift.name}</CardTitle>
-                        <p className="text-muted-foreground text-sm">
-                          Pour: {gift.to}
-                        </p>
-                      </div>
-                      <Badge
-                        variant="secondary"
-                        className="bg-secondary/20 text-secondary border-secondary/30"
+                <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground text-xs sm:text-sm">
+                      Date d'offre:
+                    </p>
+                    <p className="font-medium">{gift.date}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs sm:text-sm">
+                      Occasion:
+                    </p>
+                    <p className="font-medium">{gift.occasion}</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => handleViewDetails(gift)}
+                  >
+                    Voir les détails
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => handleEdit(gift)}
+                  >
+                    Modifier
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        className="text-destructive"
+                        onClick={() => handleDelete(gift.id)}
                       >
-                        {gift.cost}€
-                      </Badge>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div>
-                          <p className="text-muted-foreground">Date d'offre:</p>
-                          <p className="font-medium">{gift.date}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Occasion:</p>
-                          <p className="font-medium">{gift.occasion}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2 pt-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1"
-                          onClick={() => handleViewDetails(gift)}
-                        >
-                          Voir les détails
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1"
-                          onClick={() => handleEdit(gift)}
-                        >
-                          Modifier
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
+                        <Trash className="h-4 w-4 mr-2" />
+                        Supprimer
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             </Card>
@@ -386,6 +414,8 @@ const GiftsGiven = () => {
             isOpen={isEditOpen}
             onClose={() => setIsEditOpen(false)}
             gift={selectedGift}
+            onSave={handleSaveEdit}
+            type="given"
           />
         </>
       )}
