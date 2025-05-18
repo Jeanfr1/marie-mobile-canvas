@@ -96,15 +96,83 @@ const GiftsGiven = () => {
 
     const userId = user.username;
     const userDataKey = `userData_${userId}`;
-    const userData = JSON.parse(localStorage.getItem(userDataKey) || "{}");
+    const MAX_LOCAL_STORAGE_IMAGE_SIZE = 250 * 1024; // 250KB for data URLs in localStorage
 
-    userData.givenGifts = gifts;
-    localStorage.setItem(userDataKey, JSON.stringify(userData));
+    console.log(
+      "GiftsGiven: useEffect for localStorage sync triggered. Gifts count:",
+      gifts.length
+    );
 
-    // Update dashboard stats
+    try {
+      const currentData = JSON.parse(localStorage.getItem(userDataKey) || "{}");
+
+      // Sanitize gifts before saving to localStorage
+      const giftsForStorage = gifts.map((gift) => {
+        if (
+          gift.image &&
+          typeof gift.image === "string" &&
+          gift.image.startsWith("data:") &&
+          gift.image.length > MAX_LOCAL_STORAGE_IMAGE_SIZE
+        ) {
+          console.warn(
+            `GiftsGiven: Image for gift '${gift.name}' (ID: ${gift.id}) is a large data URL. Storing without image in localStorage.`
+          );
+          return { ...gift, image: null }; // Store without the large data URL
+        }
+        return gift;
+      });
+
+      const newUserData = {
+        ...currentData,
+        givenGifts: giftsForStorage,
+      };
+
+      localStorage.setItem(userDataKey, JSON.stringify(newUserData));
+      console.log("GiftsGiven: localStorage updated successfully.");
+    } catch (error) {
+      console.error(
+        "GiftsGiven: Error saving to localStorage (Phase 1 - with sanitized images):",
+        error
+      );
+      toast.error(
+        "Erreur de sauvegarde locale. Tentative avec moins de données."
+      );
+
+      // Fallback: Try saving without any images if the above failed (e.g. total size still too large)
+      try {
+        const currentData = JSON.parse(
+          localStorage.getItem(userDataKey) || "{}"
+        );
+        const giftsWithoutAnyImages = gifts.map((gift) => ({
+          ...gift,
+          image: null,
+        }));
+        const newUserDataFallback = {
+          ...currentData,
+          givenGifts: giftsWithoutAnyImages,
+        };
+        localStorage.setItem(userDataKey, JSON.stringify(newUserDataFallback));
+        console.warn(
+          "GiftsGiven: localStorage updated (fallback - all images removed)."
+        );
+        toast.warning(
+          "Certaines images n'ont pas pu être sauvegardées localement en raison de la taille."
+        );
+      } catch (finalError) {
+        console.error(
+          "GiftsGiven: Critical error saving to localStorage (Phase 2 - all images removed):",
+          finalError
+        );
+        toast.error(
+          "Erreur critique de sauvegarde locale. Les données pourraient ne pas persister."
+        );
+      }
+    }
+
+    // Update dashboard stats (always based on in-memory 'gifts' state)
     dispatchGlobalEvent("gifts-updated", {
       type: "given",
-      count: gifts.length,
+      count: gifts.length, // Reflects the actual number of gifts, including those with images in memory
     });
   }, [gifts, user]);
 

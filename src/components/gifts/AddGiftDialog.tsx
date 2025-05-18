@@ -148,85 +148,92 @@ export const AddGiftDialog = ({
 
     // Reset image error state
     setHasImageError(false);
+    setGiftImage(null); // Reset previous image attempts
 
-    // Check file size (max 5MB)
+    // Define a maximum size for data URLs (e.g., 1MB)
+    const MAX_DATA_URL_SIZE = 1 * 1024 * 1024;
+
+    // Check file size (max 5MB for initial selection)
     if (file.size > 5 * 1024 * 1024) {
       toast.error("L'image est trop grande. Maximum 5 Mo.");
+      setHasImageError(true); // Mark as error so it's not included in giftData
       return;
     }
 
+    setUploadingImage(true);
+    console.log("Starting image processing...");
+
+    // Prepare data URL generation (as a promise for fallback)
+    const reader = new FileReader();
+    let dataUrlForFallback = "";
+    const readFileAsDataUrlPromise = new Promise<string>((resolve, reject) => {
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+    reader.readAsDataURL(file); // Start reading the file for potential fallback
+
     try {
-      setUploadingImage(true);
-      console.log("Starting upload process...");
+      // Attempt S3 Upload First
+      const fileName = `${Date.now()}-${file.name}`;
+      console.log("Attempting S3 upload with filename:", fileName);
 
-      // First, create a data URL as a fallback method
-      const reader = new FileReader();
-      let dataUrl = "";
-
-      // Create a promise for the FileReader
-      const readFileAsDataUrl = new Promise<string>((resolve, reject) => {
-        reader.onload = () => {
-          dataUrl = reader.result as string;
-          resolve(dataUrl);
-        };
-        reader.onerror = () => {
-          reject(new Error("Failed to read file as data URL"));
-        };
-      });
-
-      reader.readAsDataURL(file);
-
-      try {
-        // Wait for the data URL to be created
-        dataUrl = await readFileAsDataUrl;
-        console.log("Data URL created as backup");
-
-        try {
-          // Try S3 upload
-          const fileName = `${Date.now()}-${file.name}`;
-          console.log("Attempting S3 upload with filename:", fileName);
-
-          // Upload file to S3 using Amplify Storage
-          const result = await Storage.put(fileName, file, {
-            contentType: file.type,
-            progressCallback: (progress) => {
-              console.log(
-                `Upload progress: ${progress.loaded}/${progress.total}`
-              );
-            },
-          });
-          console.log("S3 upload successful:", result);
-
-          // Get the public URL of the uploaded image
-          const imageUrl = await Storage.get(fileName);
-          console.log("Public URL obtained:", imageUrl);
-
-          // Update the state with the S3 URL
-          setGiftImage(imageUrl.toString());
-          console.log("Image URL set in state (S3)");
-          toast.success("Image téléchargée avec succès!");
-        } catch (s3Error) {
-          console.error("S3 upload error:", s3Error);
-
-          // Fallback to data URL if S3 upload fails
-          console.log("Falling back to data URL");
-          setGiftImage(dataUrl);
-          console.log("Image URL set in state (data URL)");
-          toast.warning(
-            "Service de stockage indisponible - utilisation du stockage local"
+      await Storage.put(fileName, file, {
+        contentType: file.type,
+        progressCallback: (progress) => {
+          console.log(
+            `S3 Upload progress: ${progress.loaded}/${progress.total}`
           );
+        },
+      });
+      console.log("S3 upload successful for:", fileName);
+
+      const s3ImageUrl = await Storage.get(fileName);
+      console.log("S3 Public URL obtained:", s3ImageUrl);
+      setGiftImage(s3ImageUrl.toString());
+      toast.success("Image téléchargée avec succès vers le cloud!");
+      // S3 success, giftImage is set with S3 URL
+    } catch (s3Error) {
+      console.error("S3 upload error:", s3Error);
+      toast.error(
+        "Échec du téléversement cloud. Tentative de sauvegarde locale."
+      );
+
+      // S3 failed, now try to use the data URL (if it was generated successfully)
+      try {
+        dataUrlForFallback = await readFileAsDataUrlPromise;
+        console.log(
+          "Data URL generated for fallback, length:",
+          dataUrlForFallback.length
+        );
+
+        if (dataUrlForFallback.length > MAX_DATA_URL_SIZE) {
+          setGiftImage(null);
+          setHasImageError(true);
+          toast.error(
+            "Image trop grande pour la sauvegarde locale. Veuillez utiliser une image plus petite."
+          );
+          console.warn("S3 failed and data URL fallback is too large.");
+        } else {
+          setGiftImage(dataUrlForFallback);
+          toast.warning(
+            "Image sauvegardée localement (qualité potentiellement réduite)."
+          );
+          console.log("S3 failed, using data URL fallback for image preview.");
         }
-      } catch (dataUrlError) {
-        console.error("Error creating data URL:", dataUrlError);
+      } catch (dataUrlGenerationError) {
+        console.error(
+          "Error generating data URL for fallback:",
+          dataUrlGenerationError
+        );
+        setGiftImage(null);
         setHasImageError(true);
-        toast.error("Impossible de lire l'image");
+        toast.error(
+          "Échec du traitement local de l'image après l'erreur de téléversement cloud."
+        );
       }
-    } catch (error) {
-      console.error("General error during upload:", error);
-      setHasImageError(true);
-      toast.error("Erreur lors du téléchargement de l'image");
     } finally {
       setUploadingImage(false);
+      console.log("Image processing finished.");
     }
   };
 

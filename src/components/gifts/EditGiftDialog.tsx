@@ -92,6 +92,7 @@ export const EditGiftDialog = ({
   );
 
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [hasImageError, setHasImageError] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -101,40 +102,102 @@ export const EditGiftDialog = ({
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    console.log(
+      "EditDialog: File selected:",
+      file.name,
+      "size:",
+      file.size,
+      "type:",
+      file.type
+    );
 
-    // Check file size (max 5MB)
+    setHasImageError(false);
+    setImagePreview(null); // Reset preview while processing
+    setGiftData((prev) => ({ ...prev, image: null })); // Reset image in gift data
+
+    const MAX_DATA_URL_SIZE = 1 * 1024 * 1024; // 1MB
+
     if (file.size > 5 * 1024 * 1024) {
+      // 5MB initial check
       toast.error("L'image est trop grande. Maximum 5 Mo.");
+      setHasImageError(true);
       return;
     }
 
+    setUploadingImage(true);
+    console.log("EditDialog: Starting image processing...");
+
+    const reader = new FileReader();
+    let dataUrlForFallback = "";
+    const readFileAsDataUrlPromise = new Promise<string>((resolve, reject) => {
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+    reader.readAsDataURL(file);
+
     try {
-      setUploadingImage(true);
-
-      // Generate a unique key for the image
+      // Attempt S3 Upload First
       const fileName = `${Date.now()}-${file.name}`;
-
-      // Upload file to S3 using Amplify Storage
-      const result = await Storage.put(fileName, file, {
+      console.log("EditDialog: Attempting S3 upload:", fileName);
+      await Storage.put(fileName, file, {
         contentType: file.type,
         progressCallback: (progress) => {
-          console.log(`Uploaded: ${progress.loaded}/${progress.total}`);
+          console.log(
+            `EditDialog: S3 Upload progress: ${progress.loaded}/${progress.total}`
+          );
         },
       });
+      console.log("EditDialog: S3 upload successful for:", fileName);
 
-      // Get the public URL of the uploaded image
-      const imageUrl = await Storage.get(fileName);
+      const s3ImageUrl = await Storage.get(fileName);
+      console.log("EditDialog: S3 Public URL:", s3ImageUrl);
+      setImagePreview(s3ImageUrl.toString());
+      setGiftData((prev) => ({ ...prev, image: s3ImageUrl.toString() }));
+      toast.success("Image mise à jour et téléversée vers le cloud!");
+    } catch (s3Error) {
+      console.error("EditDialog: S3 upload error:", s3Error);
+      toast.error(
+        "Échec du téléversement cloud. Tentative de sauvegarde locale."
+      );
 
-      // Update the state with the image URL
-      setImagePreview(imageUrl.toString());
-      setGiftData((prev) => ({ ...prev, image: imageUrl.toString() }));
+      try {
+        dataUrlForFallback = await readFileAsDataUrlPromise;
+        console.log(
+          "EditDialog: Data URL for fallback, length:",
+          dataUrlForFallback.length
+        );
 
-      toast.success("Image téléchargée avec succès!");
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      toast.error("Erreur lors du téléchargement de l'image");
+        if (dataUrlForFallback.length > MAX_DATA_URL_SIZE) {
+          setImagePreview(null);
+          setGiftData((prev) => ({ ...prev, image: null }));
+          setHasImageError(true);
+          toast.error(
+            "Image trop grande pour la sauvegarde locale. Veuillez utiliser une image plus petite."
+          );
+          console.warn("EditDialog: S3 failed, data URL fallback too large.");
+        } else {
+          setImagePreview(dataUrlForFallback);
+          setGiftData((prev) => ({ ...prev, image: dataUrlForFallback }));
+          toast.warning(
+            "Image sauvegardée localement (qualité potentiellement réduite)."
+          );
+          console.log("EditDialog: S3 failed, using data URL fallback.");
+        }
+      } catch (dataUrlGenerationError) {
+        console.error(
+          "EditDialog: Error generating data URL for fallback:",
+          dataUrlGenerationError
+        );
+        setImagePreview(null);
+        setGiftData((prev) => ({ ...prev, image: null }));
+        setHasImageError(true);
+        toast.error(
+          "Échec du traitement local de l'image après l'erreur de téléversement cloud."
+        );
+      }
     } finally {
       setUploadingImage(false);
+      console.log("EditDialog: Image processing finished.");
     }
   };
 
@@ -315,7 +378,10 @@ export const EditGiftDialog = ({
                       accept="image/*"
                       className="sr-only"
                       onChange={handleImageChange}
-                      disabled={uploadingImage}
+                      disabled={
+                        uploadingImage ||
+                        (giftData && giftData.id === undefined)
+                      }
                     />
                   </label>
                 </div>

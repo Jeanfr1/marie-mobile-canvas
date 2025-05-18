@@ -109,12 +109,78 @@ const GiftsReceived = () => {
 
     const userId = user.username;
     const userDataKey = `userData_${userId}`;
-    const userData = JSON.parse(localStorage.getItem(userDataKey) || "{}");
+    const MAX_LOCAL_STORAGE_IMAGE_SIZE = 250 * 1024; // 250KB for data URLs in localStorage
 
-    userData.receivedGifts = gifts;
-    localStorage.setItem(userDataKey, JSON.stringify(userData));
+    console.log(
+      "GiftsReceived: useEffect for localStorage sync. Gifts count:",
+      gifts.length
+    );
 
-    // Update dashboard stats
+    try {
+      const currentData = JSON.parse(localStorage.getItem(userDataKey) || "{}");
+
+      const giftsForStorage = gifts.map((gift) => {
+        if (
+          gift.image &&
+          typeof gift.image === "string" &&
+          gift.image.startsWith("data:") &&
+          gift.image.length > MAX_LOCAL_STORAGE_IMAGE_SIZE
+        ) {
+          console.warn(
+            `GiftsReceived: Image for gift '${gift.name}' (ID: ${gift.id}) is large. Storing without image in localStorage.`
+          );
+          return { ...gift, image: null };
+        }
+        return gift;
+      });
+
+      const newUserData = {
+        ...currentData,
+        receivedGifts: giftsForStorage,
+      };
+
+      localStorage.setItem(userDataKey, JSON.stringify(newUserData));
+      console.log("GiftsReceived: localStorage updated successfully.");
+    } catch (error) {
+      console.error(
+        "GiftsReceived: Error saving to localStorage (Phase 1 - sanitized images):",
+        error
+      );
+      toast.error(
+        "Erreur de sauvegarde locale. Tentative avec moins de données."
+      );
+
+      try {
+        const currentData = JSON.parse(
+          localStorage.getItem(userDataKey) || "{}"
+        );
+        const giftsWithoutAnyImages = gifts.map((gift) => ({
+          ...gift,
+          image: null,
+        }));
+        const newUserDataFallback = {
+          ...currentData,
+          receivedGifts: giftsWithoutAnyImages,
+        };
+        localStorage.setItem(userDataKey, JSON.stringify(newUserDataFallback));
+        console.warn(
+          "GiftsReceived: localStorage updated (fallback - all images removed)."
+        );
+        toast.warning(
+          "Certaines images n'ont pas pu être sauvegardées localement en raison de la taille."
+        );
+      } catch (finalError) {
+        console.error(
+          "GiftsReceived: Critical error saving to localStorage (Phase 2 - all images removed):",
+          finalError
+        );
+        toast.error(
+          "Erreur critique de sauvegarde locale. Les données pourraient ne pas persister."
+        );
+      }
+    }
+
+    // Update dashboard stats (always based on in-memory 'gifts' state)
     dispatchGlobalEvent("gifts-updated", {
       type: "received",
       count: gifts.length,
