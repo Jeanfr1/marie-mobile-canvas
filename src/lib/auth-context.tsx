@@ -9,8 +9,6 @@ import {
   fetchAuthSession,
   fetchUserAttributes,
   getCurrentUser,
-} from "aws-amplify/auth";
-import {
   AuthSignInOutput,
   signIn,
   signOut,
@@ -20,8 +18,26 @@ import {
   confirmResetPassword,
 } from "aws-amplify/auth";
 
+// Define proper types for user and error handling
+interface UserAttributes {
+  name?: string;
+  email?: string;
+  [key: string]: string | undefined;
+}
+
+interface AuthenticatedUser {
+  userId: string;
+  username: string;
+  attributes: UserAttributes;
+}
+
+interface AuthError {
+  name?: string;
+  message?: string;
+}
+
 interface AuthContextType {
-  user: any | null;
+  user: AuthenticatedUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   authError: string | null;
@@ -45,7 +61,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Helper function to format error messages
-const formatAuthError = (error: any): string => {
+const formatAuthError = (error: AuthError): string => {
   console.error("Auth error details:", error);
 
   if (error.name === "NotAuthorizedException") {
@@ -68,7 +84,7 @@ const formatAuthError = (error: any): string => {
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
 
@@ -144,9 +160,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             );
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Sign in error:", error);
-      const errorMessage = formatAuthError(error);
+      const errorMessage = formatAuthError(error as AuthError);
       setAuthError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -162,9 +178,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await signOut();
       console.log("Sign out successful");
       setUser(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Sign out error:", error);
-      const errorMessage = formatAuthError(error);
+      const errorMessage = formatAuthError(error as AuthError);
       setAuthError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -211,9 +227,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       console.log("Sign up successful, confirmation needed");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Sign up error:", error);
-      const errorMessage = formatAuthError(error);
+      const errorMessage = formatAuthError(error as AuthError);
       setAuthError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -238,9 +254,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           "Sign up confirmation not complete. Additional steps may be required."
         );
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Confirm sign up error:", error);
-      const errorMessage = formatAuthError(error);
+      const errorMessage = formatAuthError(error as AuthError);
       setAuthError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -255,9 +271,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       await resetPassword({ username });
       console.log("Password reset request successful");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Forgot password error:", error);
-      const errorMessage = formatAuthError(error);
+      const errorMessage = formatAuthError(error as AuthError);
       setAuthError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -288,9 +304,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           "Password reset not complete. Additional steps may be required."
         );
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Forgot password submit error:", error);
-      const errorMessage = formatAuthError(error);
+      const errorMessage = formatAuthError(error as AuthError);
       setAuthError(errorMessage);
       throw new Error(errorMessage);
     } finally {

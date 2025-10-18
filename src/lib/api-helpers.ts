@@ -1,27 +1,41 @@
-import { API } from "aws-amplify";
+import { get, post, put, del } from "aws-amplify/api";
 import { useAuth } from "./auth-context";
 
 const API_NAME = "GiftTrackerAPI";
 
+// Define proper types for API options and responses
 interface ApiOptions {
   headers?: Record<string, string>;
   queryParams?: Record<string, string>;
-  body?: any;
+  body?: Record<string, unknown>;
   userId?: string;
+}
+
+interface ApiResponse {
+  status?: number;
+  data?: {
+    message?: string;
+    [key: string]: unknown;
+  };
+}
+
+interface ApiError extends Error {
+  response?: ApiResponse;
+  request?: unknown;
 }
 
 /**
  * Helper function to make authenticated API calls with proper error handling
  * Ensures data ownership by adding userId to request when needed
  */
-export async function apiCall<T = any>(
+export async function apiCall<T = unknown>(
   path: string,
   method: "GET" | "POST" | "PUT" | "DELETE",
   options: ApiOptions = {}
 ): Promise<T> {
   try {
     // Add common options and headers
-    const apiOptions: any = {
+    const apiOptions: Record<string, unknown> = {
       headers: {
         "Content-Type": "application/json",
         ...options.headers,
@@ -47,35 +61,53 @@ export async function apiCall<T = any>(
     }
 
     // Make the API call
-    let response;
+    let response: unknown;
     switch (method) {
       case "GET":
-        response = await API.get(API_NAME, path, apiOptions);
+        response = await get({
+          apiName: API_NAME,
+          path,
+          options: apiOptions,
+        });
         break;
       case "POST":
-        response = await API.post(API_NAME, path, apiOptions);
+        response = await post({
+          apiName: API_NAME,
+          path,
+          options: apiOptions,
+        });
         break;
       case "PUT":
-        response = await API.put(API_NAME, path, apiOptions);
+        response = await put({
+          apiName: API_NAME,
+          path,
+          options: apiOptions,
+        });
         break;
       case "DELETE":
-        response = await API.del(API_NAME, path, apiOptions);
+        response = await del({
+          apiName: API_NAME,
+          path,
+          options: apiOptions,
+        });
         break;
       default:
         throw new Error(`Unsupported method: ${method}`);
     }
 
     return response as T;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`API ${method} error for ${path}:`, error);
 
+    const apiError = error as ApiError;
+
     // Handle specific error cases
-    if (error.response) {
+    if (apiError.response) {
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
-      const status = error.response.status;
+      const status = apiError.response.status;
       const message =
-        error.response.data?.message || "An unexpected error occurred";
+        apiError.response.data?.message || "An unexpected error occurred";
 
       if (status === 403) {
         throw new Error("You don't have permission to access this resource");
@@ -84,7 +116,7 @@ export async function apiCall<T = any>(
       } else {
         throw new Error(message);
       }
-    } else if (error.request) {
+    } else if (apiError.request) {
       // The request was made but no response was received
       throw new Error(
         "No response received from server. Please check your connection."
@@ -103,7 +135,7 @@ export function useApi() {
   const { user } = useAuth();
 
   return {
-    get: async <T = any>(
+    get: async <T = unknown>(
       path: string,
       options: Omit<ApiOptions, "userId"> = {}
     ) => {
@@ -113,9 +145,9 @@ export function useApi() {
       });
     },
 
-    post: async <T = any>(
+    post: async <T = unknown>(
       path: string,
-      body: any,
+      body: Record<string, unknown>,
       options: Omit<ApiOptions, "userId" | "body"> = {}
     ) => {
       return apiCall<T>(path, "POST", {
@@ -125,9 +157,9 @@ export function useApi() {
       });
     },
 
-    put: async <T = any>(
+    put: async <T = unknown>(
       path: string,
-      body: any,
+      body: Record<string, unknown>,
       options: Omit<ApiOptions, "userId" | "body"> = {}
     ) => {
       return apiCall<T>(path, "PUT", {
@@ -137,7 +169,7 @@ export function useApi() {
       });
     },
 
-    delete: async <T = any>(
+    delete: async <T = unknown>(
       path: string,
       options: Omit<ApiOptions, "userId"> = {}
     ) => {

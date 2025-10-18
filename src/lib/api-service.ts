@@ -1,4 +1,4 @@
-import { API } from "aws-amplify";
+import { get, post, put, del } from "aws-amplify/api";
 
 const apiName = "GiftTrackerAPI";
 
@@ -52,9 +52,9 @@ export interface User {
 
 // User endpoints
 export const userApi = {
-  getCurrentUser: () => API.get(apiName, "/users", {}),
+  getCurrentUser: () => get({ apiName, path: "/users" }),
   updateUser: (userData: Partial<User>) =>
-    API.put(apiName, "/users", { body: userData }),
+    put({ apiName, path: "/users", options: { body: userData } }),
 };
 
 // Gifts endpoints
@@ -63,45 +63,63 @@ export const giftsApi = {
     type?: "given" | "received";
     contactId?: string;
     eventId?: string;
-  }) => API.get(apiName, "/gifts", { queryStringParameters: params }),
+  }) =>
+    get({
+      apiName,
+      path: "/gifts",
+      options: { queryParams: params },
+    }),
   createGift: (gift: Omit<Gift, "giftId">) =>
-    API.post(apiName, "/gifts", { body: gift }),
+    post({ apiName, path: "/gifts", options: { body: gift } }),
   updateGift: (giftId: string, gift: Partial<Gift>) =>
-    API.put(apiName, `/gifts/${giftId}`, { body: gift }),
-  deleteGift: (giftId: string) => API.del(apiName, `/gifts/${giftId}`, {}),
+    put({ apiName, path: `/gifts/${giftId}`, options: { body: gift } }),
+  deleteGift: (giftId: string) => del({ apiName, path: `/gifts/${giftId}` }),
 };
 
 // Contacts endpoints
 export const contactsApi = {
-  getContacts: () => API.get(apiName, "/contacts", {}),
+  getContacts: () => get({ apiName, path: "/contacts" }),
   createContact: (contact: Omit<Contact, "contactId">) =>
-    API.post(apiName, "/contacts", { body: contact }),
+    post({ apiName, path: "/contacts", options: { body: contact } }),
   updateContact: (contactId: string, contact: Partial<Contact>) =>
-    API.put(apiName, `/contacts/${contactId}`, { body: contact }),
+    put({
+      apiName,
+      path: `/contacts/${contactId}`,
+      options: { body: contact },
+    }),
   deleteContact: (contactId: string) =>
-    API.del(apiName, `/contacts/${contactId}`, {}),
+    del({ apiName, path: `/contacts/${contactId}` }),
 };
 
 // Events endpoints
 export const eventsApi = {
   getEvents: (params?: { startDate?: string; endDate?: string }) =>
-    API.get(apiName, "/events", { queryStringParameters: params }),
+    get({
+      apiName,
+      path: "/events",
+      options: { queryParams: params },
+    }),
   createEvent: (event: Omit<Event, "eventId">) =>
-    API.post(apiName, "/events", { body: event }),
+    post({ apiName, path: "/events", options: { body: event } }),
   updateEvent: (eventId: string, event: Partial<Event>) =>
-    API.put(apiName, `/events/${eventId}`, { body: event }),
-  deleteEvent: (eventId: string) => API.del(apiName, `/events/${eventId}`, {}),
+    put({ apiName, path: `/events/${eventId}`, options: { body: event } }),
+  deleteEvent: (eventId: string) =>
+    del({ apiName, path: `/events/${eventId}` }),
 };
 
 // Image upload endpoints
 export const imagesApi = {
   getUploadUrl: (contentType: string, filename: string) =>
-    API.post(apiName, "/images/upload-url", {
-      body: { contentType, filename },
+    post({
+      apiName,
+      path: "/images/upload-url",
+      options: {
+        body: { contentType, filename },
+      },
     }),
 };
 
 // Notifications endpoints
 export const notificationsApi = {
-  getNotifications: () => API.get(apiName, "/notifications", {}),
+  getNotifications: () => get({ apiName, path: "/notifications" }),
 };

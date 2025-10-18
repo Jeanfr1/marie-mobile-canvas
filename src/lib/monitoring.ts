@@ -1,4 +1,4 @@
-import { Amplify } from "aws-amplify";
+import { getCurrentUser } from "aws-amplify/auth";
 
 // Error types
 export enum ErrorType {
@@ -15,7 +15,7 @@ interface ErrorLog {
   message: string;
   timestamp: string;
   userId?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 // Interface for performance metrics
@@ -24,7 +24,7 @@ interface PerformanceMetric {
   duration: number;
   timestamp: string;
   userId?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 class Monitoring {
@@ -45,7 +45,7 @@ class Monitoring {
   async logError(
     type: ErrorType,
     message: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ) {
     const errorLog: ErrorLog = {
       type,
@@ -55,7 +55,7 @@ class Monitoring {
     };
 
     try {
-      const user = await Amplify.Auth.currentAuthenticatedUser();
+      const user = await getCurrentUser();
       errorLog.userId = user.username;
     } catch (e) {
       // User not authenticated
@@ -76,7 +76,7 @@ class Monitoring {
   async logPerformance(
     name: string,
     duration: number,
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ) {
     const metric: PerformanceMetric = {
       name,
@@ -86,7 +86,7 @@ class Monitoring {
     };
 
     try {
-      const user = await Amplify.Auth.currentAuthenticatedUser();
+      const user = await getCurrentUser();
       metric.userId = user.username;
     } catch (e) {
       // User not authenticated
@@ -146,29 +146,29 @@ export const monitoring = Monitoring.getInstance();
 // Performance monitoring decorator
 export function measurePerformance() {
   return function (
-    target: any,
+    target: unknown,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
     const originalMethod = descriptor.value;
 
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (...args: unknown[]) {
       const start = performance.now();
       try {
         const result = await originalMethod.apply(this, args);
         const duration = performance.now() - start;
         await monitoring.logPerformance(propertyKey, duration, {
           args: args.map((arg) =>
-            typeof arg === "object" ? JSON.stringify(arg) : arg
+            typeof arg === "object" ? JSON.stringify(arg) : String(arg)
           ),
         });
         return result;
       } catch (error) {
         const duration = performance.now() - start;
         await monitoring.logPerformance(propertyKey, duration, {
-          error: error.message,
+          error: (error as Error).message,
           args: args.map((arg) =>
-            typeof arg === "object" ? JSON.stringify(arg) : arg
+            typeof arg === "object" ? JSON.stringify(arg) : String(arg)
           ),
         });
         throw error;
@@ -182,20 +182,20 @@ export function measurePerformance() {
 // Error handling decorator
 export function handleError(errorType: ErrorType = ErrorType.UNKNOWN) {
   return function (
-    target: any,
+    target: unknown,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
     const originalMethod = descriptor.value;
 
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (...args: unknown[]) {
       try {
         return await originalMethod.apply(this, args);
       } catch (error) {
-        await monitoring.logError(errorType, error.message, {
+        await monitoring.logError(errorType, (error as Error).message, {
           method: propertyKey,
           args: args.map((arg) =>
-            typeof arg === "object" ? JSON.stringify(arg) : arg
+            typeof arg === "object" ? JSON.stringify(arg) : String(arg)
           ),
         });
         throw error;
