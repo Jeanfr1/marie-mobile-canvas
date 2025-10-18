@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Plus, Upload, Image } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { GiftItem } from "@/pages/GiftsReceived";
-import { Storage } from "aws-amplify";
+import { uploadData, getUrl } from "aws-amplify/storage";
 
 interface AddGiftDialogProps {
   type: "received" | "given";
@@ -100,7 +100,7 @@ export const AddGiftDialog = ({
 
     try {
       // Create gift object based on type
-      const giftData: any = {
+      const giftData: Record<string, unknown> = {
         name: giftName,
         date: giftDate,
         occasion: giftOccasion,
@@ -177,17 +177,21 @@ export const AddGiftDialog = ({
       const fileName = `${Date.now()}-${file.name}`;
       console.log("Attempting S3 upload with filename:", fileName);
 
-      await Storage.put(fileName, file, {
-        contentType: file.type,
-        progressCallback: (progress) => {
-          console.log(
-            `S3 Upload progress: ${progress.loaded}/${progress.total}`
-          );
+      await uploadData({
+        key: fileName,
+        data: file,
+        options: {
+          contentType: file.type,
+          progressCallback: (progress) => {
+            console.log(
+              `S3 Upload progress: ${progress.loaded}/${progress.total}`
+            );
+          },
         },
       });
       console.log("S3 upload successful for:", fileName);
 
-      const s3ImageUrl = await Storage.get(fileName);
+      const s3ImageUrl = await getUrl({ key: fileName });
       console.log("S3 Public URL obtained:", s3ImageUrl);
       setGiftImage(s3ImageUrl.toString());
       toast.success("Image téléchargée avec succès vers le cloud!");

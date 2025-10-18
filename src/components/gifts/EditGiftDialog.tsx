@@ -18,7 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
-import { Storage } from "aws-amplify";
+import { uploadData, getUrl } from "aws-amplify/storage";
 
 interface EditGiftDialogProps {
   isOpen: boolean;
@@ -35,7 +35,7 @@ interface EditGiftDialogProps {
     thanked?: boolean;
   };
   type: "given" | "received";
-  onSave: (gift: any) => void;
+  onSave: (gift: Record<string, unknown>) => void;
 }
 
 export const EditGiftDialog = ({
@@ -139,17 +139,21 @@ export const EditGiftDialog = ({
       // Attempt S3 Upload First
       const fileName = `${Date.now()}-${file.name}`;
       console.log("EditDialog: Attempting S3 upload:", fileName);
-      await Storage.put(fileName, file, {
-        contentType: file.type,
-        progressCallback: (progress) => {
-          console.log(
-            `EditDialog: S3 Upload progress: ${progress.loaded}/${progress.total}`
-          );
+      await uploadData({
+        key: fileName,
+        data: file,
+        options: {
+          contentType: file.type,
+          progressCallback: (progress) => {
+            console.log(
+              `EditDialog: S3 Upload progress: ${progress.loaded}/${progress.total}`
+            );
+          },
         },
       });
       console.log("EditDialog: S3 upload successful for:", fileName);
 
-      const s3ImageUrl = await Storage.get(fileName);
+      const s3ImageUrl = await getUrl({ key: fileName });
       console.log("EditDialog: S3 Public URL:", s3ImageUrl);
       setImagePreview(s3ImageUrl.toString());
       setGiftData((prev) => ({ ...prev, image: s3ImageUrl.toString() }));
