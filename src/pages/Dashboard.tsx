@@ -111,12 +111,12 @@ const Dashboard = () => {
       if (receivedGifts.length > 0) {
         const formattedGifts = receivedGifts
           .slice(-3) // Get last 3 gifts
-          .map((gift: any) => ({
-            id: gift.id,
-            name: gift.name,
-            from: gift.from,
-            date: gift.date,
-            status: gift.thanked ? "Thank you sent" : "Pending",
+          .map((gift: Record<string, unknown>) => ({
+            id: gift.id as number,
+            name: gift.name as string,
+            from: gift.from as string,
+            date: gift.date as string,
+            status: (gift.thanked as boolean) ? "Thank you sent" : "Pending",
           }));
 
         setRecentGifts(formattedGifts);
@@ -126,20 +126,20 @@ const Dashboard = () => {
       if (events.length > 0) {
         const today = new Date();
         const formattedEvents = events
-          .map((event: any) => {
-            const eventDate = new Date(event.date);
+          .map((event: Record<string, unknown>) => {
+            const eventDate = new Date(event.date as string);
             const daysLeft = Math.ceil(
               (eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
             );
             return {
-              id: event.id,
-              name: event.name,
+              id: event.id as number,
+              name: event.name as string,
               date: eventDate.toISOString().split("T")[0],
               daysLeft: daysLeft > 0 ? daysLeft : 0,
             };
           })
-          .filter((event: any) => event.daysLeft >= 0)
-          .sort((a: any, b: any) => a.daysLeft - b.daysLeft)
+          .filter((event: Event) => event.daysLeft >= 0)
+          .sort((a: Event, b: Event) => a.daysLeft - b.daysLeft)
           .slice(0, 3);
 
         setUpcomingEvents(formattedEvents);
@@ -171,13 +171,15 @@ const Dashboard = () => {
         const userData = JSON.parse(localStorage.getItem(userDataKey) || "{}");
         if (userData.receivedGifts) {
           const allGifts = userData.receivedGifts;
-          const recentOnes = allGifts.slice(-3).map((gift: any) => ({
-            id: gift.id,
-            name: gift.name,
-            from: gift.from,
-            date: gift.date,
-            status: gift.thanked ? "Thank you sent" : "Pending",
-          }));
+          const recentOnes = allGifts
+            .slice(-3)
+            .map((gift: Record<string, unknown>) => ({
+              id: gift.id as number,
+              name: gift.name as string,
+              from: gift.from as string,
+              date: gift.date as string,
+              status: (gift.thanked as boolean) ? "Thank you sent" : "Pending",
+            }));
           setRecentGifts(recentOnes);
         }
       } else if (type === "given") {
@@ -244,10 +246,15 @@ const Dashboard = () => {
           };
         })
         .filter(
-          (contact: any) =>
+          (contact: Contact & { daysUntilBirthday: number }) =>
             contact.daysUntilBirthday <= 14 && contact.daysUntilBirthday >= 0
         )
-        .sort((a: any, b: any) => a.daysUntilBirthday - b.daysUntilBirthday);
+        .sort(
+          (
+            a: Contact & { daysUntilBirthday: number },
+            b: Contact & { daysUntilBirthday: number }
+          ) => a.daysUntilBirthday - b.daysUntilBirthday
+        );
 
       // If we have upcoming birthdays, show the first one
       if (upcomingBirthdays.length > 0) {
@@ -258,7 +265,7 @@ const Dashboard = () => {
 
         // Find the first birthday that hasn't been notified about
         const birthdayToNotify = upcomingBirthdays.find(
-          (contact: any) =>
+          (contact: Contact & { daysUntilBirthday: number }) =>
             !notifiedBirthdays.includes(`${contact.id}_${today.getFullYear()}`)
         );
 
@@ -402,10 +409,15 @@ const Dashboard = () => {
         };
       })
       .filter(
-        (contact: any) =>
+        (contact: Contact & { daysUntilBirthday: number }) =>
           contact.daysUntilBirthday <= 30 && contact.daysUntilBirthday >= 0
       )
-      .sort((a: any, b: any) => a.daysUntilBirthday - b.daysUntilBirthday)
+      .sort(
+        (
+          a: Contact & { daysUntilBirthday: number },
+          b: Contact & { daysUntilBirthday: number }
+        ) => a.daysUntilBirthday - b.daysUntilBirthday
+      )
       .slice(0, 3); // Show max 3 upcoming birthdays
 
     if (upcomingBirthdays.length === 0) return null;
@@ -422,34 +434,36 @@ const Dashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {upcomingBirthdays.map((contact: any) => (
-              <div
-                key={contact.id}
-                className="flex items-center justify-between border-b pb-2"
-              >
-                <div>
-                  <div className="font-medium">{contact.name}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {contact.daysUntilBirthday === 0
-                      ? "Aujourd'hui !"
-                      : contact.daysUntilBirthday === 1
-                      ? "Demain"
-                      : `Dans ${contact.daysUntilBirthday} jours`}
-                  </div>
-                </div>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    setContactWithBirthday(contact);
-                    setIsBirthdayPromptOpen(true);
-                  }}
-                  className="gap-1"
+            {upcomingBirthdays.map(
+              (contact: Contact & { daysUntilBirthday: number }) => (
+                <div
+                  key={contact.id}
+                  className="flex items-center justify-between border-b pb-2"
                 >
-                  <Gift className="h-4 w-4" />
-                  Offrir un cadeau
-                </Button>
-              </div>
-            ))}
+                  <div>
+                    <div className="font-medium">{contact.name}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {contact.daysUntilBirthday === 0
+                        ? "Aujourd'hui !"
+                        : contact.daysUntilBirthday === 1
+                        ? "Demain"
+                        : `Dans ${contact.daysUntilBirthday} jours`}
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setContactWithBirthday(contact);
+                      setIsBirthdayPromptOpen(true);
+                    }}
+                    className="gap-1"
+                  >
+                    <Gift className="h-4 w-4" />
+                    Offrir un cadeau
+                  </Button>
+                </div>
+              )
+            )}
           </div>
         </CardContent>
       </Card>

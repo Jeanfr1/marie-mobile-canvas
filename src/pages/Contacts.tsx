@@ -48,7 +48,7 @@ const Contacts = () => {
   const [isEditContactOpen, setIsEditContactOpen] = useState(false);
   const [isViewGiftsOpen, setIsViewGiftsOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [selectedContact, setSelectedContact] = useState<any | null>(null);
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
 
   // Search and filter states
   const [searchQuery, setSearchQuery] = useState("");
@@ -141,7 +141,7 @@ const Contacts = () => {
   });
 
   // Handle add new contact
-  const handleAddContact = (data: any) => {
+  const handleAddContact = (data: Record<string, unknown>) => {
     const newContact: Contact = {
       id: contacts.length + 1,
       name: data.name,
@@ -159,7 +159,7 @@ const Contacts = () => {
   };
 
   // Handle edit contact
-  const handleEditContact = (data: any) => {
+  const handleEditContact = (data: Record<string, unknown>) => {
     if (!selectedContact) return;
 
     const updatedContacts = contacts.map((contact) => {
@@ -202,7 +202,7 @@ const Contacts = () => {
   });
 
   // Reset edit form when selected contact changes
-  const openEditDialog = (contact: any) => {
+  const openEditDialog = (contact: Contact) => {
     setSelectedContact(contact);
     editContactForm.reset({
       name: contact.name,

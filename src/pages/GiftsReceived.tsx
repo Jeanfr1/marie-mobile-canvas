@@ -41,7 +41,7 @@ export interface GiftItem {
 }
 
 // Create a global event system for dashboard updates
-export const dispatchGlobalEvent = (eventName: string, data?: any) => {
+export const dispatchGlobalEvent = (eventName: string, data?: unknown) => {
   const event = new CustomEvent(eventName, { detail: data });
   window.dispatchEvent(event);
 };
