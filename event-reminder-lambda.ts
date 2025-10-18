@@ -29,7 +29,9 @@ export const handler = async () => {
     eventId: item.eventId.S,
     name: item.name.S,
     date: item.date.S,
-    contactIds: item.contactIds ? item.contactIds.L.map((c: any) => c.S) : [],
+    contactIds: item.contactIds
+      ? item.contactIds.L.map((c: { S: string }) => c.S)
+      : [],
     notes: item.notes?.S,
   }));
 
