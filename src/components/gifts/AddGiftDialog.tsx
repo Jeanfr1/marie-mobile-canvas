@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Plus, Upload, Image } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { GiftItem } from "@/pages/GiftsReceived";
-import { uploadData, getUrl } from "aws-amplify/storage";
+import { imagesApi } from "@/lib/api-service";
 
 interface AddGiftDialogProps {
   type: "received" | "given";
@@ -250,31 +250,35 @@ export const AddGiftDialog = ({
     reader.readAsDataURL(processedFile); // Start reading the compressed file for potential fallback
 
     try {
-      // Attempt S3 Upload First with compressed file
+      // Step 1: Get pre-signed upload URL from API
       const fileName = `${Date.now()}-${file.name}`;
-      console.log("Attempting S3 upload with filename:", fileName);
+      console.log("Requesting upload URL for:", fileName);
 
-      const uploadResult = uploadData({
-        key: fileName,
-        data: processedFile,
-        options: {
-          contentType: processedFile.type,
-          progressCallback: (progress) => {
-            console.log(
-              `S3 Upload progress: ${progress.loaded}/${progress.total}`
-            );
-          },
+      const uploadUrlResponse = await imagesApi.getUploadUrl(
+        processedFile.type,
+        fileName
+      );
+      console.log("Upload URL response:", uploadUrlResponse);
+
+      const { uploadUrl, imageUrl } = uploadUrlResponse;
+
+      // Step 2: Upload file directly to S3 using pre-signed URL
+      console.log("Uploading file to S3...");
+      const uploadResponse = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": processedFile.type,
         },
+        body: processedFile,
       });
-      
-      // Wait for the upload to complete
-      await uploadResult.result;
-      console.log("S3 upload successful for:", fileName);
 
-      const s3ImageUrlResult = await getUrl({ key: fileName });
-      console.log("S3 URL result:", s3ImageUrlResult);
-      const imageUrl = s3ImageUrlResult.url.href;
-      console.log("S3 Public URL obtained:", imageUrl);
+      if (!uploadResponse.ok) {
+        throw new Error(`S3 upload failed: ${uploadResponse.statusText}`);
+      }
+
+      console.log("S3 upload successful!");
+      console.log("Image URL:", imageUrl);
+      
       setGiftImage(imageUrl);
       toast.success("Image téléchargée avec succès vers le cloud!");
       // S3 success, giftImage is set with S3 URL

@@ -18,7 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
-import { uploadData, getUrl } from "aws-amplify/storage";
+import { imagesApi } from "@/lib/api-service";
 
 interface EditGiftDialogProps {
   isOpen: boolean;
@@ -213,31 +213,35 @@ export const EditGiftDialog = ({
     reader.readAsDataURL(processedFile);
 
     try {
-      // Attempt S3 Upload First with compressed file
+      // Step 1: Get pre-signed upload URL from API
       const fileName = `${Date.now()}-${file.name}`;
-      console.log("EditDialog: Attempting S3 upload:", fileName);
-      
-      const uploadResult = uploadData({
-        key: fileName,
-        data: processedFile,
-        options: {
-          contentType: processedFile.type,
-          progressCallback: (progress) => {
-            console.log(
-              `EditDialog: S3 Upload progress: ${progress.loaded}/${progress.total}`
-            );
-          },
-        },
-      });
-      
-      // Wait for the upload to complete
-      await uploadResult.result;
-      console.log("EditDialog: S3 upload successful for:", fileName);
+      console.log("EditDialog: Requesting upload URL for:", fileName);
 
-      const s3ImageUrlResult = await getUrl({ key: fileName });
-      console.log("EditDialog: S3 URL result:", s3ImageUrlResult);
-      const imageUrl = s3ImageUrlResult.url.href;
-      console.log("EditDialog: S3 Public URL:", imageUrl);
+      const uploadUrlResponse = await imagesApi.getUploadUrl(
+        processedFile.type,
+        fileName
+      );
+      console.log("EditDialog: Upload URL response:", uploadUrlResponse);
+
+      const { uploadUrl, imageUrl } = uploadUrlResponse;
+
+      // Step 2: Upload file directly to S3 using pre-signed URL
+      console.log("EditDialog: Uploading file to S3...");
+      const uploadResponse = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": processedFile.type,
+        },
+        body: processedFile,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error(`S3 upload failed: ${uploadResponse.statusText}`);
+      }
+
+      console.log("EditDialog: S3 upload successful!");
+      console.log("EditDialog: Image URL:", imageUrl);
+      
       setImagePreview(imageUrl);
       setGiftData((prev) => ({ ...prev, image: imageUrl }));
       toast.success("Image mise à jour et téléversée vers le cloud!");
