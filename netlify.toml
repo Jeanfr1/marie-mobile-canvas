@@ -1,11 +1,12 @@
 # Netlify configuration file
 
 [build]
-  command = "npm ci --legacy-peer-deps && npm run build"
+  command = "npm run build:netlify"
   publish = "dist"
 
 [build.environment]
   NODE_VERSION = "18"
+  NPM_FLAGS = "--legacy-peer-deps"
 
 [dev]
   command = "npm run dev"
