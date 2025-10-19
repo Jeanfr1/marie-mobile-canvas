@@ -268,9 +268,11 @@ export const AddGiftDialog = ({
       });
       console.log("S3 upload successful for:", fileName);
 
-      const s3ImageUrl = await getUrl({ key: fileName });
-      console.log("S3 Public URL obtained:", s3ImageUrl);
-      setGiftImage(s3ImageUrl.toString());
+      const s3ImageUrlResult = await getUrl({ key: fileName });
+      console.log("S3 URL result:", s3ImageUrlResult);
+      const imageUrl = s3ImageUrlResult.url.href;
+      console.log("S3 Public URL obtained:", imageUrl);
+      setGiftImage(imageUrl);
       toast.success("Image téléchargée avec succès vers le cloud!");
       // S3 success, giftImage is set with S3 URL
     } catch (s3Error) {

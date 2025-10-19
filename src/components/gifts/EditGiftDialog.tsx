@@ -230,10 +230,12 @@ export const EditGiftDialog = ({
       });
       console.log("EditDialog: S3 upload successful for:", fileName);
 
-      const s3ImageUrl = await getUrl({ key: fileName });
-      console.log("EditDialog: S3 Public URL:", s3ImageUrl);
-      setImagePreview(s3ImageUrl.toString());
-      setGiftData((prev) => ({ ...prev, image: s3ImageUrl.toString() }));
+      const s3ImageUrlResult = await getUrl({ key: fileName });
+      console.log("EditDialog: S3 URL result:", s3ImageUrlResult);
+      const imageUrl = s3ImageUrlResult.url.href;
+      console.log("EditDialog: S3 Public URL:", imageUrl);
+      setImagePreview(imageUrl);
+      setGiftData((prev) => ({ ...prev, image: imageUrl }));
       toast.success("Image mise à jour et téléversée vers le cloud!");
     } catch (s3Error) {
       console.error("EditDialog: S3 upload error:", s3Error);
