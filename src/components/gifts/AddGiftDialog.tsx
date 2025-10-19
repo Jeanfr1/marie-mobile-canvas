@@ -134,6 +134,64 @@ export const AddGiftDialog = ({
     }
   };
 
+  // Compress image before upload
+  const compressImage = async (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // Calculate new dimensions (max 1920px on longest side)
+          const maxDimension = 1920;
+          if (width > height && width > maxDimension) {
+            height = (height / width) * maxDimension;
+            width = maxDimension;
+          } else if (height > maxDimension) {
+            width = (width / height) * maxDimension;
+            height = maxDimension;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Failed to get canvas context'));
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Convert to blob with quality compression
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error('Failed to compress image'));
+                return;
+              }
+              // Create a new File from the blob
+              const compressedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            },
+            'image/jpeg',
+            0.85 // 85% quality
+          );
+        };
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -150,18 +208,37 @@ export const AddGiftDialog = ({
     setHasImageError(false);
     setGiftImage(null); // Reset previous image attempts
 
-    // Define a maximum size for data URLs (e.g., 1MB)
-    const MAX_DATA_URL_SIZE = 1 * 1024 * 1024;
+    // Define a maximum size for data URLs (increased to 3MB for compressed images)
+    const MAX_DATA_URL_SIZE = 3 * 1024 * 1024;
 
-    // Check file size (max 5MB for initial selection)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("L'image est trop grande. Maximum 5 Mo.");
-      setHasImageError(true); // Mark as error so it's not included in giftData
+    // Check file size (max 10MB for initial selection)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("L'image est trop grande. Maximum 10 Mo.");
+      setHasImageError(true);
       return;
     }
 
     setUploadingImage(true);
     console.log("Starting image processing...");
+
+    // Compress the image first
+    let processedFile = file;
+    try {
+      if (file.type.startsWith('image/')) {
+        console.log("Compressing image...");
+        processedFile = await compressImage(file);
+        console.log(
+          "Image compressed from",
+          file.size,
+          "to",
+          processedFile.size,
+          "bytes"
+        );
+      }
+    } catch (compressionError) {
+      console.warn("Image compression failed, using original:", compressionError);
+      processedFile = file;
+    }
 
     // Prepare data URL generation (as a promise for fallback)
     const reader = new FileReader();
@@ -170,18 +247,18 @@ export const AddGiftDialog = ({
       reader.onload = () => resolve(reader.result as string);
       reader.onerror = (error) => reject(error);
     });
-    reader.readAsDataURL(file); // Start reading the file for potential fallback
+    reader.readAsDataURL(processedFile); // Start reading the compressed file for potential fallback
 
     try {
-      // Attempt S3 Upload First
+      // Attempt S3 Upload First with compressed file
       const fileName = `${Date.now()}-${file.name}`;
       console.log("Attempting S3 upload with filename:", fileName);
 
       await uploadData({
         key: fileName,
-        data: file,
+        data: processedFile,
         options: {
-          contentType: file.type,
+          contentType: processedFile.type,
           progressCallback: (progress) => {
             console.log(
               `S3 Upload progress: ${progress.loaded}/${progress.total}`
