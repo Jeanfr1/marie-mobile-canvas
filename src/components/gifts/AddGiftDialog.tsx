@@ -254,7 +254,7 @@ export const AddGiftDialog = ({
       const fileName = `${Date.now()}-${file.name}`;
       console.log("Attempting S3 upload with filename:", fileName);
 
-      await uploadData({
+      const uploadResult = uploadData({
         key: fileName,
         data: processedFile,
         options: {
@@ -266,6 +266,9 @@ export const AddGiftDialog = ({
           },
         },
       });
+      
+      // Wait for the upload to complete
+      await uploadResult.result;
       console.log("S3 upload successful for:", fileName);
 
       const s3ImageUrlResult = await getUrl({ key: fileName });

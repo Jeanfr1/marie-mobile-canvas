@@ -216,7 +216,8 @@ export const EditGiftDialog = ({
       // Attempt S3 Upload First with compressed file
       const fileName = `${Date.now()}-${file.name}`;
       console.log("EditDialog: Attempting S3 upload:", fileName);
-      await uploadData({
+      
+      const uploadResult = uploadData({
         key: fileName,
         data: processedFile,
         options: {
@@ -228,6 +229,9 @@ export const EditGiftDialog = ({
           },
         },
       });
+      
+      // Wait for the upload to complete
+      await uploadResult.result;
       console.log("EditDialog: S3 upload successful for:", fileName);
 
       const s3ImageUrlResult = await getUrl({ key: fileName });
